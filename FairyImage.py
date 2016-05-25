@@ -1,7 +1,8 @@
 import getopt
+import os
 import random
 import sys
-import os
+
 import pymysql.cursors
 
 CLOUDSQL_PROJECT = 'testflask-1315'
@@ -192,12 +193,12 @@ def get_fairy_from_db(dbname, id):
                     database='My_Fairy_Kingdom',)
     else:
 
-        con = pymysql.connect(host='104.197.55.21',
-                         user='root',
-                         passwd='TestFlask',
-                         database='My_Fairy_Kingdom',
-                         charset='utf8mb4',
-                         cursorclass=pymysql.cursors.DictCursor)
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
     try:
         with con.cursor(pymysql.cursors.DictCursor) as cursor:
             # Read a single record
@@ -240,6 +241,76 @@ def get_fairy_from_db(dbname, id):
         con.close()
 
 
+def get_multiple_fairies_from_db(dbname, ids):
+    # returns an array of fairies when passed an array of Fiary ID's
+    #  db = pymysql.connect(host='eu-cdbr-azure-west-d.cloudapp.net',
+    if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
+        con = pymysql.connect(
+            host='104.197.55.21',
+            unix_socket='testflask-1315:fairydb',
+            user='root',
+            passwd='TestFlask',
+            database='My_Fairy_Kingdom', )
+    else:
+
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with con.cursor(pymysql.cursors.DictCursor) as cursor:
+            # Read a single record
+            x = 0
+            fairies = []
+            id_array = ids
+            lenght = int(len(id_array))
+            while x < lenght:
+                sql = "SELECT * FROM " + dbname + " WHERE `fairyid`=%s"
+                cursor.execute(sql, (ids[x],))
+                result = cursor.fetchone()
+                # if result == None :
+                #         return None
+                # desc = cursor.description
+                # dict ={}
+
+                # for(name,value) in zip(desc,result):
+                #         dict[name[0]] =value
+
+                fairy = dict(
+                    [('name', result['fairyname']), ('bodyx', result['fairybodyX']), ('bodyy', result['fairybodyY']),
+                     ('wingx', result['fairywingX']),
+                     ('wingy', result['fairywingY']), ('sex', result['fairysex']), ('eyesx', result['fairyeyesX']),
+                     ('eyesy', result['fairyeyesY']),
+                     ('mouthsx', result['fairymouthX']), ('mouthsy', result['fairymouthY']),
+                     ('earsx', result['fairyearsX']), ('earsy', result['fairyearsY']),
+                     ('shoesx', result['fairyshoesX']), ('shoesy', result['fairyshoesY']),
+                     ('accessx', result['fairyaccessX']), ('accessy', result['fairyaccessY']),
+                     ('haccessx', result['fairyheadaccessX']), ('haccessy', result['fairyheadaccessY']),
+                     ('topx', result['fairytopX']), ('topy', result['fairytopY']),
+                     ('bottomx', result['fairybottomX']), ('bottomy', result['fairybottomY']),
+                     ('hairx', result['fairyhairX']), ('hairy', result['fairyhairY']),
+                     ('wandx', result['fairywandX']), ('wandy', result['fairywandY']),
+                     ('agescore', result["fairyagescore"]),
+                     ('kindscore', result["fairykindnessscore"]), ('charactorscore', result["fairycharactorscore"]),
+                     ('magicscore', result["fairymagicscore"]), ('agilityscore', result["fairyagilityscore"]),
+                     ('intelligence', result["fairyintelligence"]), ('kindness', result["fairykindness"]),
+                     ('fairness', result["fairyfairness"]), ('funness', result["fairyfunness"]),
+                     ('wisdom', result["fairywisdom"]), ('dexterity', result["fairydexterity"]),
+                     ('humour', result["fairyhumour"]), ('magic', result["fairymagic"]), ('speed', result["fairyspeed"])
+                     ])
+                # print (fairy)
+                fairies.append(fairy)
+                x = x + 1
+            return fairies
+    finally:
+        con.close()
+
+
+
+
+
 # TODO delete Fairy from file
 
 # TODO CREATE SPROTE SHEET TABLE
@@ -257,12 +328,12 @@ def create_ssheet_table(dbname):
                     database='My_Fairy_Kingdom')
     else:
 
-        con = pymysql.connect(host='104.197.55.21',
-                         user='root',
-                         passwd='TestFlask',
-                         database='My_Fairy_Kingdom',
-                         charset='utf8mb4',
-                         cursorclass=pymysql.cursors.DictCursor)
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
     # prepare a cursor object using cursor() method
     cursor = con.cursor()
 
@@ -294,12 +365,12 @@ def create_fairy_table(dbname):
                     database='My_Fairy_Kingdom')
     else:
 
-        con = pymysql.connect(host='104.197.55.21',
-                         user='root',
-                         passwd='TestFlask',
-                         database='My_Fairy_Kingdom',
-                         charset='utf8mb4',
-                         cursorclass=pymysql.cursors.DictCursor)
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
     # prepare a cursor object using cursor() method
     cursor = con.cursor()
 
@@ -371,12 +442,12 @@ def delete_table(dbname):
                     database='My_Fairy_Kingdom')
     else:
 
-        con = pymysql.connect(host='104.197.55.21',
-                         user='root',
-                         passwd='TestFlask',
-                         database='My_Fairy_Kingdom',
-                         charset='utf8mb4',
-                         cursorclass=pymysql.cursors.DictCursor)
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
     # prepare a cursor object using cursor() method
     cursor = con.cursor()
 
@@ -400,12 +471,12 @@ def add_fairy_to_db(dbname, fairy):
                     database='My_Fairy_Kingdom')
     else:
 
-        con = pymysql.connect(host='104.197.55.21',
-                         user='root',
-                         passwd='TestFlask',
-                         database='My_Fairy_Kingdom',
-                         charset='utf8mb4',
-                         cursorclass=pymysql.cursors.DictCursor)
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
     # prepare a cursor object using cursor() method
 
     try:
@@ -553,36 +624,36 @@ def getfairyimage(fairy, *arg):
         canvas.paste(access, (99, 116), access)
         canvas.paste(wand, (193, 163), wand)
 
-    draw = ImageDraw.Draw(canvas)
-    titlefont = ImageFont.truetype("data/Arial.ttf", 30)
-    draw.text((150, 0), fairy['name'], (0, 0, 0), font=titlefont)
-    draw.text((150, 550), "Age Index :" + str(fairy['agescore']), (0, 0, 0), font=titlefont)
-    draw.text((150, 580), "Kindness :" + str(int(fairy['kindscore'] / 2)), (0, 0, 0), font=titlefont)
-    draw.text((150, 610), "Charactor :" + str(fairy['charactorscore']), (0, 0, 0), font=titlefont)
-    draw.text((150, 640), "Magic Strength :" + str(fairy['magicscore']), (0, 0, 0), font=titlefont)
-    draw.text((150, 670), "Agility :" + str(fairy["agilityscore"]), (0, 0, 0), font=titlefont)
-
-    if len(arg) == 1:
-        if arg[0] == "d":
-            font = ImageFont.truetype("data/Arial.ttf", 16)
-            draw.text((475, 0), "Body ref: =" + str(fairy['bodyx']) + "," + str(fairy['bodyy']), (0, 0, 0), font=font)
-            draw.text((475, 20), "Hair ref: =" + str(fairy['hairx']) + "," + str(fairy['hairy']), (0, 0, 0), font=font)
-            draw.text((475, 40), "Wand ref: =" + str(fairy['wandx']) + "," + str(fairy['wandy']), (0, 0, 0), font=font)
-            draw.text((475, 60), "Wings ref: =" + str(fairy['wingx']) + "," + str(fairy['wingy']), (0, 0, 0), font=font)
-            draw.text((475, 80), "eyes ref: =" + str(fairy['eyesx']) + "," + str(fairy['eyesy']), (0, 0, 0), font=font)
-            draw.text((475, 100), "mouth ref: =" + str(fairy['mouthsx']) + "," + str(fairy['mouthsy']), (0, 0, 0),
-                      font=font)
-            draw.text((475, 120), "ears ref: =" + str(fairy['earsx']) + "," + str(fairy['earsy']), (0, 0, 0), font=font)
-            draw.text((475, 140), "shoe ref: =" + str(fairy['shoesx']) + "," + str(fairy['shoesy']), (0, 0, 0),
-                      font=font)
-            draw.text((475, 160), "access ref: =" + str(fairy['accessx']) + "," + str(fairy['accessy']), (0, 0, 0),
-                      font=font)
-            draw.text((475, 180), "head access ref: =" + str(fairy['haccessx']) + "," + str(fairy['haccessy']),
-                      (0, 0, 0), font=font)
-            draw.text((475, 200), "top clothes ref: =" + str(fairy['topx']) + "," + str(fairy['topy']), (0, 0, 0),
-                      font=font)
-            draw.text((475, 220), "bottom clothes ref: =" + str(fairy['bottomx']) + "," + str(fairy['bottomy']),
-                      (0, 0, 0), font=font)
+    # draw = ImageDraw.Draw(canvas)
+    # titlefont = ImageFont.truetype("data/Arial.ttf", 30)
+    # draw.text((150, 0), fairy['name'], (0, 0, 0), font=titlefont)
+    # draw.text((150, 550), "Age Index :" + str(fairy['agescore']), (0, 0, 0), font=titlefont)
+    # draw.text((150, 580), "Kindness :" + str(int(fairy['kindscore'] / 2)), (0, 0, 0), font=titlefont)
+    # draw.text((150, 610), "Charactor :" + str(fairy['charactorscore']), (0, 0, 0), font=titlefont)
+    # draw.text((150, 640), "Magic Strength :" + str(fairy['magicscore']), (0, 0, 0), font=titlefont)
+    # draw.text((150, 670), "Agility :" + str(fairy["agilityscore"]), (0, 0, 0), font=titlefont)
+    #
+    # if len(arg) == 1:
+    #     if arg[0] == "d":
+    #         font = ImageFont.truetype("data/Arial.ttf", 16)
+    #         draw.text((475, 0), "Body ref: =" + str(fairy['bodyx']) + "," + str(fairy['bodyy']), (0, 0, 0), font=font)
+    #         draw.text((475, 20), "Hair ref: =" + str(fairy['hairx']) + "," + str(fairy['hairy']), (0, 0, 0), font=font)
+    #         draw.text((475, 40), "Wand ref: =" + str(fairy['wandx']) + "," + str(fairy['wandy']), (0, 0, 0), font=font)
+    #         draw.text((475, 60), "Wings ref: =" + str(fairy['wingx']) + "," + str(fairy['wingy']), (0, 0, 0), font=font)
+    #         draw.text((475, 80), "eyes ref: =" + str(fairy['eyesx']) + "," + str(fairy['eyesy']), (0, 0, 0), font=font)
+    #         draw.text((475, 100), "mouth ref: =" + str(fairy['mouthsx']) + "," + str(fairy['mouthsy']), (0, 0, 0),
+    #                   font=font)
+    #         draw.text((475, 120), "ears ref: =" + str(fairy['earsx']) + "," + str(fairy['earsy']), (0, 0, 0), font=font)
+    #         draw.text((475, 140), "shoe ref: =" + str(fairy['shoesx']) + "," + str(fairy['shoesy']), (0, 0, 0),
+    #                   font=font)
+    #         draw.text((475, 160), "access ref: =" + str(fairy['accessx']) + "," + str(fairy['accessy']), (0, 0, 0),
+    #                   font=font)
+    #         draw.text((475, 180), "head access ref: =" + str(fairy['haccessx']) + "," + str(fairy['haccessy']),
+    #                   # (0, 0, 0), font=font)
+    #         draw.text((475, 200), "top clothes ref: =" + str(fairy['topx']) + "," + str(fairy['topy']), (0, 0, 0),
+    #                   font=font)
+    #         draw.text((475, 220), "bottom clothes ref: =" + str(fairy['bottomx']) + "," + str(fairy['bottomy']),
+    #                   (0, 0, 0), font=font)
 
     return canvas
 
@@ -606,12 +677,12 @@ def getfairyIDfromname(name):
                     database='My_Fairy_Kingdom')
     else:
 
-        con = pymysql.connect(host='104.197.55.21',
-                         user='root',
-                         passwd='TestFlask',
-                         database='My_Fairy_Kingdom',
-                         charset='utf8mb4',
-                         cursorclass=pymysql.cursors.DictCursor)
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
     # prepare a cursor object using cursor() method
 
     try:
@@ -642,12 +713,12 @@ def getfairyreferences(dbname):
                     database='My_Fairy_Kingdom')
     else:
 
-        con = pymysql.connect(host='104.197.55.21',
-                         user='root',
-                         passwd='TestFlask',
-                         database='My_Fairy_Kingdom',
-                         charset='utf8mb4',
-                         cursorclass=pymysql.cursors.DictCursor)
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
     # prepare a cursor object using cursor() method
 
 
@@ -821,25 +892,7 @@ def drawfairytofile(fairy, *arg):
 
     if len(arg) == 1:
         if arg[0] == "d":
-            font = ImageFont.truetype("data/Arial.ttf", 16)
-            draw.text((475, 0), "Body ref: =" + str(fairy['bodyx']) + "," + str(fairy['bodyy']), (0, 0, 0), font=font)
-            draw.text((475, 20), "Hair ref: =" + str(fairy['hairx']) + "," + str(fairy['hairy']), (0, 0, 0), font=font)
-            draw.text((475, 40), "Wand ref: =" + str(fairy['wandx']) + "," + str(fairy['wandy']), (0, 0, 0), font=font)
-            draw.text((475, 60), "Wings ref: =" + str(fairy['wingx']) + "," + str(fairy['wingy']), (0, 0, 0), font=font)
-            draw.text((475, 80), "eyes ref: =" + str(fairy['eyesx']) + "," + str(fairy['eyesy']), (0, 0, 0), font=font)
-            draw.text((475, 100), "mouth ref: =" + str(fairy['mouthsx']) + "," + str(fairy['mouthsy']), (0, 0, 0),
-                      font=font)
-            draw.text((475, 120), "ears ref: =" + str(fairy['earsx']) + "," + str(fairy['earsy']), (0, 0, 0), font=font)
-            draw.text((475, 140), "shoe ref: =" + str(fairy['shoesx']) + "," + str(fairy['shoesy']), (0, 0, 0),
-                      font=font)
-            draw.text((475, 160), "access ref: =" + str(fairy['accessx']) + "," + str(fairy['accessy']), (0, 0, 0),
-                      font=font)
-            draw.text((475, 180), "head access ref: =" + str(fairy['haccessx']) + "," + str(fairy['haccessy']),
-                      (0, 0, 0), font=font)
-            draw.text((475, 200), "top clothes ref: =" + str(fairy['topx']) + "," + str(fairy['topy']), (0, 0, 0),
-                      font=font)
-            draw.text((475, 220), "bottom clothes ref: =" + str(fairy['bottomx']) + "," + str(fairy['bottomy']),
-                      (0, 0, 0), font=font)
+            canvas = addFairydetaildstoImage(canvas)
 
 
 
@@ -874,6 +927,7 @@ def getfairymontage(fairyies, columns):
     y = 0
     while y < len(fairyies):
         im = getfairyimage(fairyies[y])
+        im = addFairyNametoImage(im, fairyies[y])
         canvas2.paste(im, ((y % columns) * 800, (y // columns) * 800), im)
         y += 1
 
@@ -903,36 +957,85 @@ def printfairysheet(lower, upper):
             x =x +10
     printfairymontage(fairies, 8)
 
-def getfairysheet(number):
+
+def getrandomfairysheet(number):
 # produces a 'number' of random fairies and retruns a canvas  PNG  with x columns, suggest not more that 48 Fairies for A4
 
-    fairies = []
+ids = []
     x=1
+totalfairies = int(numberoffairies('m') + numberoffairies('f'))
     while (x<=number):
-        fairies.append(get_fairy_from_db("FAIRY_TBL",random.randint(1,int(numberoffairies('m')+numberoffairies('f')))))
+        ids.append(random.randint(1, totalfairies))
         x=x+1
 
-    # if (lower == 1):
-    #     x=lower
-    #     while (x<=lower+(upper*10)):
-    #         fairies.append(get_fairy_from_db("FAIRY_TBL", x))
-    #         x =x +10
-    #
-    # elif (lower % 10 != 1):
-    #     x = int(((lower//10)*10)+1)
-    #     while (x<=lower+(upper*10)):
-    #         fairies.append(get_fairy_from_db("FAIRY_TBL", x))
-    #         x =x +10
-    #
-    # elif (lower < 11):
-    #     x = 11
-    #     while (x<=lower+(upper*10)):
-    #         fairies.append(get_fairy_from_db("FAIRY_TBL", x))
-    #         x =x +10
-    canvas = getfairymontage(fairies, 3)
+fairies = get_multiple_fairies_from_db('FAIRY_TBL', ids)
+canvas = getfairymontage(fairies, 4)
+return canvas
+
+
+def getfairysheet(number):
+    # produces the first  'number' of fairies from the DB and retruns a canvas  PNG  with x columns, suggest not more that 48 Fairies for A4
+
+    ids = []
+    x = 1
+    while (x <= number):
+        ids.append(x)
+        x = x + 1
+
+    fairies = get_multiple_fairies_from_db('FAIRY_TBL', ids)
+    canvas = getfairymontage(fairies, 4)
     return canvas
 
 
+def addFairyNametoImage(Image, Fairy):
+    canvas = Image
+    fairy = Fairy
+    draw = ImageDraw.Draw(canvas)
+    titlefont = ImageFont.truetype("data/Arial.ttf", 30)
+    draw.text((150, 0), fairy['name'], (0, 0, 0), font=titlefont)
+    return canvas
+
+
+def addFairyChartoImage(Image, Fairy):
+    canvas = Image
+    fairy = Fairy
+    draw = ImageDraw.Draw(canvas)
+    titlefont = ImageFont.truetype("data/Arial.ttf", 30)
+    draw.text((150, 0), fairy['name'], (0, 0, 0), font=titlefont)
+    draw.text((150, 550), "Age Index :" + str(fairy['agescore']), (0, 0, 0), font=titlefont)
+    draw.text((150, 580), "Kindness :" + str(int(fairy['kindscore'] / 2)), (0, 0, 0), font=titlefont)
+    draw.text((150, 610), "Charactor :" + str(fairy['charactorscore']), (0, 0, 0), font=titlefont)
+    draw.text((150, 640), "Magic Strength :" + str(fairy['magicscore']), (0, 0, 0), font=titlefont)
+    draw.text((150, 670), "Agility :" + str(fairy["agilityscore"]), (0, 0, 0), font=titlefont)
+
+    return canvas
+
+
+def addFairydetaildstoImage(Image, Fairy):
+    canvas = Image
+    fairy = Fairy
+    draw = ImageDraw.Draw(canvas)
+    font = ImageFont.truetype("data/Arial.ttf", 16)
+    draw.text((475, 0), "Body ref: =" + str(fairy['bodyx']) + "," + str(fairy['bodyy']), (0, 0, 0), font=font)
+    draw.text((475, 20), "Hair ref: =" + str(fairy['hairx']) + "," + str(fairy['hairy']), (0, 0, 0), font=font)
+    draw.text((475, 40), "Wand ref: =" + str(fairy['wandx']) + "," + str(fairy['wandy']), (0, 0, 0), font=font)
+    draw.text((475, 60), "Wings ref: =" + str(fairy['wingx']) + "," + str(fairy['wingy']), (0, 0, 0), font=font)
+    draw.text((475, 80), "eyes ref: =" + str(fairy['eyesx']) + "," + str(fairy['eyesy']), (0, 0, 0), font=font)
+    draw.text((475, 100), "mouth ref: =" + str(fairy['mouthsx']) + "," + str(fairy['mouthsy']), (0, 0, 0),
+              font=font)
+    draw.text((475, 120), "ears ref: =" + str(fairy['earsx']) + "," + str(fairy['earsy']), (0, 0, 0), font=font)
+    draw.text((475, 140), "shoe ref: =" + str(fairy['shoesx']) + "," + str(fairy['shoesy']), (0, 0, 0),
+              font=font)
+    draw.text((475, 160), "access ref: =" + str(fairy['accessx']) + "," + str(fairy['accessy']), (0, 0, 0),
+              font=font)
+    draw.text((475, 180), "head access ref: =" + str(fairy['haccessx']) + "," + str(fairy['haccessy']),
+              (0, 0, 0), font=font)
+    draw.text((475, 200), "top clothes ref: =" + str(fairy['topx']) + "," + str(fairy['topy']), (0, 0, 0),
+              font=font)
+    draw.text((475, 220), "bottom clothes ref: =" + str(fairy['bottomx']) + "," + str(fairy['bottomy']),
+              (0, 0, 0), font=font)
+
+    return canvas
 
 # todo save spritesheets in DB
 
@@ -956,6 +1059,18 @@ def getrandomfairypic():
 
 #   COMMAND LINE FUNCTIONS
 
+def getrandomfairy():
+    # gets a list of all fairy ID's in DB and randomly chooses one to draw to screen
+    l = getfairyreferences("FAIRY_TBL")
+    numgirl = (len(l[0]))
+    numboy = (len(l[1]))
+    Ids = []
+    for x in range(0, numgirl - 1):
+        Ids.append(l[0][x][0])
+    for y in range(0, numboy - 1):
+        Ids.append(l[1][y][0])
+    fairy = get_fairy_from_db("FAIRY_TBL", int(Ids[random.randint(0, len(Ids))]))
+    return fairy
 
 def main(argv):
     #    for argv in sys.argv: 1
