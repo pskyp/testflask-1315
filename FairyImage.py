@@ -422,6 +422,7 @@ def create_fairy_table(dbname):
         fairyhumour INT,
         fairymagic INT,
         fairyspeed INT,
+        image MEDIUMBLOB,
     PRIMARY KEY(fairyid)
   )"""
 
@@ -460,8 +461,16 @@ def delete_table(dbname):
 
 
 def add_fairy_to_db(dbname, fairy):
+    import StringIO
     # Connect to the database
     #  db = pymysql.connect(host='eu-cdbr-azure-west-d.cloudapp.net',
+    canvas = getfairyimage(fairy)
+    out = StringIO.StringIO()
+    canvas.save(out, "JPEG")
+    o = out.getvalue()
+
+
+
     if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
         con = pymysql.connect(
                     host='104.197.55.21',
@@ -482,7 +491,7 @@ def add_fairy_to_db(dbname, fairy):
     try:
         with con.cursor() as cursor:
             # Create a new record
-            sql = "INSERT INTO " + dbname + "(`fairyname`, `fairysex`,`fairybodyX`,`fairybodyY`,`fairywingX`,`fairywingY`,`fairytopX`,`fairytopY`,`fairyshoesX`,`fairyshoesY`,`fairybottomX`,`fairybottomY`,`fairymouthX`,`fairymouthY`,`fairyeyesX`,`fairyeyesY`,`fairyhairX`,`fairyhairY`,`fairyearsX`,`fairyearsY`,`fairyheadaccessX`,`fairyheadaccessY`,`fairyaccessX`,`fairyaccessY`,`fairywandx`,`fairywandy`,`fairyagescore`,`fairykindnessscore`,`fairycharactorscore`,`fairymagicscore`,`fairyagilityscore`,`fairyintelligence`,`fairykindness`,`fairyfairness`,`fairyfunness`,`fairywisdom`,`fairydexterity`,`fairyhumour`,`fairymagic`,`fairyspeed`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s)"
+            sql = "INSERT INTO " + dbname + "(`fairyname`, `fairysex`,`fairybodyX`,`fairybodyY`,`fairywingX`,`fairywingY`,`fairytopX`,`fairytopY`,`fairyshoesX`,`fairyshoesY`,`fairybottomX`,`fairybottomY`,`fairymouthX`,`fairymouthY`,`fairyeyesX`,`fairyeyesY`,`fairyhairX`,`fairyhairY`,`fairyearsX`,`fairyearsY`,`fairyheadaccessX`,`fairyheadaccessY`,`fairyaccessX`,`fairyaccessY`,`fairywandx`,`fairywandy`,`fairyagescore`,`fairykindnessscore`,`fairycharactorscore`,`fairymagicscore`,`fairyagilityscore`,`fairyintelligence`,`fairykindness`,`fairyfairness`,`fairyfunness`,`fairywisdom`,`fairydexterity`,`fairyhumour`,`fairymagic`,`fairyspeed`,`image`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s)"
 
             cursor.execute(sql,
                            (fairy['name'], fairy['sex'], fairy['bodyx'], fairy['bodyy'], fairy['wingx'], fairy['wingy'],
@@ -493,12 +502,9 @@ def add_fairy_to_db(dbname, fairy):
                             fairy['agescore'], fairy['kindscore'], fairy['charactorscore'], fairy['magicscore'],
                             fairy['agilityscore'],
                             fairy['intelligence'], fairy['kindness'], fairy['fairness'], fairy['funness'],
-                            fairy['wisdom'], fairy['dexterity'], fairy['humour'], fairy['magic'], fairy['speed']))
+                            fairy['wisdom'], fairy['dexterity'], fairy['humour'], fairy['magic'], fairy['speed'], (o,)))
 
-
-
-
-        con.commit()
+            con.commit()
 
     finally:
         con.close()
@@ -1039,7 +1045,45 @@ def addFairydetaildstoImage(Image, Fairy):
 
 # todo save spritesheets in DB
 
-   
+def getfairypicfromdb(id):
+    import base64
+    if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
+        con = pymysql.connect(
+            host='104.197.55.21',
+            unix_socket='testflask-1315:fairydb',
+            user='root',
+            passwd='TestFlask',
+            database='My_Fairy_Kingdom', )
+    else:
+
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with con.cursor(pymysql.cursors.DictCursor) as cursor:
+            # Read a single record
+            sql = "SELECT * FROM FAIRY_TBL WHERE `fairyid`=%s"
+            cursor.execute(sql, (id,))
+            result = cursor.fetchone()
+            # if result == None :
+            #         return None
+            # desc = cursor.description
+            # dict ={}
+
+            # for(name,value) in zip(desc,result):
+            #         dict[name[0]] =value
+
+            imgstring = result['image']
+            image = base64.decodestring(imgstring)
+
+
+    finally:
+        con.close()
+
+    return image
 
 
 def getrandomfairypic():
@@ -1052,8 +1096,9 @@ def getrandomfairypic():
         Ids.append(l[0][x][0])
     for y in range(0,numboy-1):
         Ids.append(l[1][y][0])
-    fairy = get_fairy_from_db("FAIRY_TBL",int(Ids[random.randint(0,len(Ids))]) )
-    fairypicture = getfairyimage(fairy)
+    # fairy = get_fairy_from_db("FAIRY_TBL",int(Ids[random.randint(0,len(Ids))]) )
+    # fairypicture = getrandomfairypic(int(Ids[random.randint(0,len(Ids))]))
+    fairypicture = getrandomfairypic()
     return fairypicture
 
 

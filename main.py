@@ -12,6 +12,7 @@ def index():
 
     fairy = FairyImage.getrandomfairy()
     canvas = FairyImage.getfairyimage(fairy)
+    # canvas = FairyImage.getrandomfairypic()
     canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     output=StringIO.StringIO()
     canvas.save(output,format="PNG")
@@ -45,7 +46,7 @@ def montage20():
     import StringIO
     from PIL import Image
     size = 1200, 2000
-    canvas = FairyImage.getrandomfairysheet(20)
+    canvas = FairyImage.getrandomfairysheet(8)
     canvas.thumbnail(size, Image.ANTIALIAS)
     output = StringIO.StringIO()
     canvas.save(output, format="PNG")
@@ -62,7 +63,7 @@ def montageal00():
     import StringIO
     from PIL import Image
     size = 1200, 10000
-    canvas = FairyImage.getfairysheet(100)
+    canvas = FairyImage.getfairysheet(12)
     canvas.thumbnail(size, Image.ANTIALIAS)
     output=StringIO.StringIO()
     canvas.save(output,format="PNG")
