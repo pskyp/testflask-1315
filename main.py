@@ -11,7 +11,8 @@ def index():
     import StringIO
 
     fairy = FairyImage.getrandomfairy()
-    canvas = FairyImage.getfairyimage(fairy)
+    canvas = FairyImage.getfairypicfromdb(fairy['name'])
+    # canvas = FairyImage.getfairyimage(fairy)
     # canvas = FairyImage.getrandomfairypic()
     canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     output=StringIO.StringIO()
@@ -30,7 +31,8 @@ def home():
     import StringIO
 
     fairy = FairyImage.getrandomfairy()
-    canvas = FairyImage.getfairyimage(fairy)
+    canvas = FairyImage.getfairypicfromdb(fairy['name'])
+    # canvas = FairyImage.getfairyimage(fairy)
     canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     output=StringIO.StringIO()
     canvas.save(output,format="PNG")

@@ -2,6 +2,7 @@ import getopt
 import os
 import random
 import sys
+import StringIO
 
 import pymysql.cursors
 
@@ -466,7 +467,7 @@ def add_fairy_to_db(dbname, fairy):
     #  db = pymysql.connect(host='eu-cdbr-azure-west-d.cloudapp.net',
     canvas = getfairyimage(fairy)
     out = StringIO.StringIO()
-    canvas.save(out, "JPEG")
+    canvas.save(out, "PNG")
     o = out.getvalue()
 
 
@@ -932,8 +933,11 @@ def getfairymontage(fairyies, columns):
                         (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
     y = 0
     while y < len(fairyies):
-        im = getfairyimage(fairyies[y])
-        im = addFairyNametoImage(im, fairyies[y])
+        # im = getfairyimage(fairyies[y])
+        fairy = fairyies[y]
+        name = fairy['name']
+        im = getfairypicfromdb(name)
+        im.paste = addFairyNametoImage(im, fairyies[y])
         canvas2.paste(im, ((y % columns) * 800, (y // columns) * 800), im)
         y += 1
 
@@ -967,16 +971,16 @@ def printfairysheet(lower, upper):
 def getrandomfairysheet(number):
 # produces a 'number' of random fairies and retruns a canvas  PNG  with x columns, suggest not more that 48 Fairies for A4
 
-ids = []
+    ids = []
     x=1
-totalfairies = int(numberoffairies('m') + numberoffairies('f'))
+    totalfairies = int(numberoffairies('m') + numberoffairies('f'))
     while (x<=number):
         ids.append(random.randint(1, totalfairies))
         x=x+1
 
-fairies = get_multiple_fairies_from_db('FAIRY_TBL', ids)
-canvas = getfairymontage(fairies, 4)
-return canvas
+    fairies = get_multiple_fairies_from_db('FAIRY_TBL', ids)
+    canvas = getfairymontage(fairies, 4)
+    return canvas
 
 
 def getfairysheet(number):
@@ -1045,7 +1049,7 @@ def addFairydetaildstoImage(Image, Fairy):
 
 # todo save spritesheets in DB
 
-def getfairypicfromdb(id):
+def getfairypicfromdb(fairyname):
     import base64
     if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
         con = pymysql.connect(
@@ -1065,8 +1069,8 @@ def getfairypicfromdb(id):
     try:
         with con.cursor(pymysql.cursors.DictCursor) as cursor:
             # Read a single record
-            sql = "SELECT * FROM FAIRY_TBL WHERE `fairyid`=%s"
-            cursor.execute(sql, (id,))
+            sql = "SELECT * FROM FAIRY_TBL WHERE `fairyname`=%s"
+            cursor.execute(sql, (fairyname,))
             result = cursor.fetchone()
             # if result == None :
             #         return None
@@ -1077,13 +1081,14 @@ def getfairypicfromdb(id):
             #         dict[name[0]] =value
 
             imgstring = result['image']
-            image = base64.decodestring(imgstring)
+            filelike = StringIO.StringIO(imgstring)
+            canvas = Image.open(filelike)
 
 
     finally:
         con.close()
 
-    return image
+    return canvas
 
 
 def getrandomfairypic():
@@ -1212,7 +1217,11 @@ if __name__ == "__main__":
 # fairy = get_fairy_from_db("FAIRY_TBL",1)
 # fairypicture = getfairyimage(fairy)
 # fairypicture.show()
-
+# fairy = getrandomfairy()
+# canvas = getfairypicfromdb(fairy['name'])
+# canvas = Image.open(filelike)
+# print(canvas)
+# canvas.show()
 
 # create a new canvas and loop through all the created fairy files and
 # combine onto a single sheet, 10 * auto
