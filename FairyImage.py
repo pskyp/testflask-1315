@@ -1,8 +1,8 @@
+import StringIO
 import getopt
 import os
 import random
 import sys
-import StringIO
 
 import pymysql.cursors
 
@@ -102,7 +102,8 @@ def name(sex):
     countofsurnames = len(surnames)
     selectedsurname = surnames[random.randint(0, countofsurnames - 1)]
     selectedname = selectedfirstname + " " + selectedsurname
-    return selectedname.replace('\n', '')
+    selectedname = selectedname.replace('\n', '')
+    return selectedname.replace('\r', '')
 
 
 def createfairy(sex):
@@ -191,7 +192,9 @@ def get_fairy_from_db(dbname, id):
                     unix_socket='testflask-1315:fairydb',
                     user='root',
                     passwd='TestFlask',
-                    database='My_Fairy_Kingdom',)
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
     else:
 
         con = pymysql.connect(host='localhost',
@@ -251,7 +254,9 @@ def get_multiple_fairies_from_db(dbname, ids):
             unix_socket='testflask-1315:fairydb',
             user='root',
             passwd='TestFlask',
-            database='My_Fairy_Kingdom', )
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
     else:
 
         con = pymysql.connect(host='localhost',
@@ -326,7 +331,9 @@ def create_ssheet_table(dbname):
                     unix_socket='testflask-1315:fairydb',
                     user='root',
                     passwd='TestFlask',
-                    database='My_Fairy_Kingdom')
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
     else:
 
         con = pymysql.connect(host='localhost',
@@ -363,7 +370,9 @@ def create_fairy_table(dbname):
                     unix_socket='testflask-1315:fairydb',
                     user='root',
                     passwd='TestFlask',
-                    database='My_Fairy_Kingdom')
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
     else:
 
         con = pymysql.connect(host='localhost',
@@ -441,7 +450,9 @@ def delete_table(dbname):
                     unix_socket='testflask-1315:fairydb',
                     user='root',
                     passwd='TestFlask',
-                    database='My_Fairy_Kingdom')
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
     else:
 
         con = pymysql.connect(host='localhost',
@@ -478,7 +489,9 @@ def add_fairy_to_db(dbname, fairy):
                     unix_socket='testflask-1315:fairydb',
                     user='root',
                     passwd='TestFlask',
-                    database='My_Fairy_Kingdom')
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
     else:
 
         con = pymysql.connect(host='localhost',
@@ -559,7 +572,7 @@ def getfairyimage(fairy, *arg):
 
         # blank canvas then the layers pasted onto it, offest to line up with
         # the base body
-        canvas = Image.new('RGBA', (800, 800), (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
+        canvas = Image.new('RGBA', (800, 550), (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
         canvas.paste(wing, (120, 50), wing)
         canvas.paste(body, (100, 30), body)
 
@@ -617,7 +630,7 @@ def getfairyimage(fairy, *arg):
 
         # blank canvas then the layers pasted onto it, offest to line up with
         # the base body
-        canvas = Image.new('RGBA', (800, 800), (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
+        canvas = Image.new('RGBA', (800, 550), (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
         canvas.paste(wing, (110, 50), wing)
         canvas.paste(body, (100, 30), body)
         canvas.paste(top, (100, 30), top)
@@ -681,7 +694,9 @@ def getfairyIDfromname(name):
                     unix_socket='testflask-1315:fairydb',
                     user='root',
                     passwd='TestFlask',
-                    database='My_Fairy_Kingdom')
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
     else:
 
         con = pymysql.connect(host='localhost',
@@ -717,7 +732,9 @@ def getfairyreferences(dbname):
                     unix_socket='testflask-1315:fairydb',
                     user='root',
                     passwd='TestFlask',
-                    database='My_Fairy_Kingdom')
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
     else:
 
         con = pymysql.connect(host='localhost',
@@ -926,11 +943,11 @@ def getfairymontage(fairyies, columns):
     number = int(len(fairyies))
     rows = number % columns
     if rows !=0:
-        canvas2 = Image.new('RGBA', (columns * 800, ((len(fairyies) // columns) * 800) + 800),
-                        (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
+        canvas2 = Image.new('RGBA', (columns * 800, ((len(fairyies) // columns) * 550) + 550),
+                            (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
     else:
-        canvas2 = Image.new('RGBA', (columns * 800, ((len(fairyies) // columns) * 800)),
-                        (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
+        canvas2 = Image.new('RGBA', (columns * 800, ((len(fairyies) // columns) * 550)),
+                            (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
     y = 0
     while y < len(fairyies):
         # im = getfairyimage(fairyies[y])
@@ -938,7 +955,7 @@ def getfairymontage(fairyies, columns):
         name = fairy['name']
         im = getfairypicfromdb(name)
         im.paste = addFairyNametoImage(im, fairyies[y])
-        canvas2.paste(im, ((y % columns) * 800, (y // columns) * 800), im)
+        canvas2.paste(im, ((y % columns) * 800, (y // columns) * 550), im)
         y += 1
 
     return canvas2
@@ -1002,7 +1019,7 @@ def addFairyNametoImage(Image, Fairy):
     fairy = Fairy
     draw = ImageDraw.Draw(canvas)
     titlefont = ImageFont.truetype("data/Arial.ttf", 30)
-    draw.text((150, 0), fairy['name'], (0, 0, 0), font=titlefont)
+    draw.text((150, 500), fairy['name'], (0, 0, 0), font=titlefont)
     return canvas
 
 
@@ -1011,12 +1028,11 @@ def addFairyChartoImage(Image, Fairy):
     fairy = Fairy
     draw = ImageDraw.Draw(canvas)
     titlefont = ImageFont.truetype("data/Arial.ttf", 30)
-    draw.text((150, 0), fairy['name'], (0, 0, 0), font=titlefont)
-    draw.text((150, 550), "Age Index :" + str(fairy['agescore']), (0, 0, 0), font=titlefont)
-    draw.text((150, 580), "Kindness :" + str(int(fairy['kindscore'] / 2)), (0, 0, 0), font=titlefont)
-    draw.text((150, 610), "Charactor :" + str(fairy['charactorscore']), (0, 0, 0), font=titlefont)
-    draw.text((150, 640), "Magic Strength :" + str(fairy['magicscore']), (0, 0, 0), font=titlefont)
-    draw.text((150, 670), "Agility :" + str(fairy["agilityscore"]), (0, 0, 0), font=titlefont)
+    draw.text((450, 250), "Age Index :" + str(fairy['agescore']), (0, 0, 0), font=titlefont)
+    draw.text((450, 280), "Kindness :" + str(int(fairy['kindscore'] / 2)), (0, 0, 0), font=titlefont)
+    draw.text((450, 310), "Charactor :" + str(fairy['charactorscore']), (0, 0, 0), font=titlefont)
+    draw.text((450, 340), "Magic Strength :" + str(fairy['magicscore']), (0, 0, 0), font=titlefont)
+    draw.text((450, 370), "Agility :" + str(fairy["agilityscore"]), (0, 0, 0), font=titlefont)
 
     return canvas
 
@@ -1050,14 +1066,16 @@ def addFairydetaildstoImage(Image, Fairy):
 # todo save spritesheets in DB
 
 def getfairypicfromdb(fairyname):
-    import base64
     if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
         con = pymysql.connect(
             host='104.197.55.21',
             unix_socket='testflask-1315:fairydb',
             user='root',
             passwd='TestFlask',
-            database='My_Fairy_Kingdom', )
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
+
     else:
 
         con = pymysql.connect(host='localhost',
@@ -1172,6 +1190,17 @@ def resetDB(x):
 # drops Fairy table and creates a new table with x number of random fairies
     delete_table("FAIRY_TBL")
     create_fairy_table("FAIRY_TBL")
+for c in range(0, x):
+    if (random.randint(0, 1) == 0):
+        createfairy('m')
+    else:
+        createfairy('f')
+return
+
+
+def createrandomfairies(x):
+    # creates with x number of random fairies and adds to DB
+
     for c in range (0,x):
         if (random.randint(0,1) ==0):
             createfairy('m')

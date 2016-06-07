@@ -16,7 +16,7 @@ def index():
     # canvas = FairyImage.getrandomfairypic()
     canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     output=StringIO.StringIO()
-    canvas.save(output,format="PNG")
+    canvas.save(output, format="JPEG")
     contents= output.getvalue().encode('base64')
     output.close()
 
@@ -35,7 +35,7 @@ def home():
     # canvas = FairyImage.getfairyimage(fairy)
     canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     output=StringIO.StringIO()
-    canvas.save(output,format="PNG")
+    canvas.save(output, format="JPEG")
     contents= output.getvalue().encode('base64')
     output.close()
 
@@ -47,12 +47,11 @@ def montage20():
     # print 20 random fairies
     import StringIO
     from PIL import Image
-    size = 1200, 2000
+    size = 800, 550
     canvas = FairyImage.getrandomfairysheet(8)
     canvas.thumbnail(size, Image.ANTIALIAS)
     output = StringIO.StringIO()
-    canvas.save(output, format="PNG")
-
+    canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
 
@@ -64,16 +63,15 @@ def montage20():
 def montageal00():
     import StringIO
     from PIL import Image
-    size = 1200, 10000
+    size = 800, 550
     canvas = FairyImage.getfairysheet(12)
     canvas.thumbnail(size, Image.ANTIALIAS)
     output=StringIO.StringIO()
-    canvas.save(output,format="PNG")
-
+    canvas.save(output, format="JPEG")
     contents= output.getvalue().encode('base64')
     output.close()
 
-    return render_template('montage.html', contents=urllib.quote(contents.rstrip('\n')))
+    return render_template('montage12.html', contents=urllib.quote(contents.rstrip('\n')))
 
 
 @app.route('/db')
@@ -114,7 +112,7 @@ def createdb_TBL():
 
 @app.route('/resetdb')
 def resetDB():
-    FairyImage.resetDB(100)
+    FairyImage.resetDB(15)
     gfairies = FairyImage.numberoffairies('f')
     bfairies = FairyImage.numberoffairies('m')
     tfairies = bfairies + gfairies
@@ -128,9 +126,10 @@ def resetDB():
 def addgfairy():
     import StringIO
     newfairy = FairyImage.createfairy('f')
-    canvas = FairyImage.getfairyimage(newfairy)
+    canvas = FairyImage.getfairypicfromdb(newfairy['name'])
+    canvas = FairyImage.addFairyNametoImage(canvas, newfairy)
     output = StringIO.StringIO()
-    canvas.save(output, format="PNG")
+    canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
 
@@ -143,13 +142,25 @@ def addgfairy():
                            fairyref=str(fairyref), contents=urllib.quote(contents.rstrip('\n')))
 
 
+@app.route('/10newfairy')
+def add10randomfairy():
+    FairyImage.createrandomfairies(10)
+    gfairies = FairyImage.numberoffairies('f')
+    bfairies = FairyImage.numberoffairies('m')
+    tfairies = bfairies + gfairies
+    fairyref = FairyImage.getfairyreferences('FAIRY_TBL')
+    return render_template("dblist.html", gfairies=str(gfairies), bfairies=str(bfairies), tfairies=str(tfairies),
+                           fairyref=str(fairyref))
+
+
 @app.route('/addbfairy')
 def addbfairy():
     import StringIO
     newfairy = FairyImage.createfairy('m')
-    canvas = FairyImage.getfairyimage(newfairy)
+    canvas = FairyImage.getfairypicfromdb(newfairy['name'])
+    canvas = FairyImage.addFairyNametoImage(canvas, newfairy)
     output = StringIO.StringIO()
-    canvas.save(output, format="PNG")
+    canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
 
@@ -166,10 +177,11 @@ def addbfairy():
 def fairycardimage():
     import StringIO
     fairy = FairyImage.getrandomfairy()
-    canvas = FairyImage.getfairyimage(fairy)
+    canvas = FairyImage.getfairypicfromdb(fairy['name'])
+    canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     canvas = FairyImage.addFairyChartoImage(canvas, fairy)
     output = StringIO.StringIO()
-    canvas.save(output, format="PNG")
+    canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
 
@@ -180,11 +192,12 @@ def fairycardimage():
 def fairydetailcardimage():
     import StringIO
     fairy = FairyImage.getrandomfairy()
-    canvas = FairyImage.getfairyimage(fairy)
+    canvas = FairyImage.getfairypicfromdb(fairy['name'])
+    canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     canvas = FairyImage.addFairyChartoImage(canvas, fairy)
     canvas = FairyImage.addFairydetaildstoImage(canvas, fairy)
     output = StringIO.StringIO()
-    canvas.save(output, format="PNG")
+    canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
 
