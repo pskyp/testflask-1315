@@ -180,7 +180,8 @@ def createfairy(sex):
                   ('humour', p["humour"]), ('magic', p["magic"]), ('speed', p["speed"])
                   ])
     add_fairy_to_db('FAIRY_TBL', fairy)
-
+    # fairyid = int(getfairyIDfromname(fairy['name']))
+    # fairy = get_fairy_from_db('FAIRY_TBL',fairyid)
     return fairy
 
 
@@ -237,7 +238,8 @@ def get_fairy_from_db(dbname, id):
                  ('intelligence', result["fairyintelligence"]), ('kindness', result["fairykindness"]),
                  ('fairness', result["fairyfairness"]), ('funness', result["fairyfunness"]),
                  ('wisdom', result["fairywisdom"]), ('dexterity', result["fairydexterity"]),
-                 ('humour', result["fairyhumour"]), ('magic', result["fairymagic"]), ('speed', result["fairyspeed"])
+                 ('humour', result["fairyhumour"]), ('magic', result["fairymagic"]), ('speed', result["fairyspeed"]),
+                 ('image', result["image"])
                  ])
             #print (fairy) 
             return fairy
@@ -304,7 +306,8 @@ def get_multiple_fairies_from_db(dbname, ids):
                      ('intelligence', result["fairyintelligence"]), ('kindness', result["fairykindness"]),
                      ('fairness', result["fairyfairness"]), ('funness', result["fairyfunness"]),
                      ('wisdom', result["fairywisdom"]), ('dexterity', result["fairydexterity"]),
-                     ('humour', result["fairyhumour"]), ('magic', result["fairymagic"]), ('speed', result["fairyspeed"])
+                     ('humour', result["fairyhumour"]), ('magic', result["fairymagic"]),
+                     ('speed', result["fairyspeed"]), ('image', result["image"])
                      ])
                 # print (fairy)
                 fairies.append(fairy)
@@ -950,10 +953,10 @@ def getfairymontage(fairyies, columns):
                             (255, 255, 255, 255))  # Empty canvas colour (r,g,b,a)?
     y = 0
     while y < len(fairyies):
-        # im = getfairyimage(fairyies[y])
         fairy = fairyies[y]
-        name = fairy['name']
-        im = getfairypicfromdb(name)
+        imgstring = fairy['image']
+        filelike = StringIO.StringIO(imgstring)
+        im = Image.open(filelike)
         im.paste = addFairyNametoImage(im, fairyies[y])
         canvas2.paste(im, ((y % columns) * 800, (y // columns) * 550), im)
         y += 1
@@ -1005,7 +1008,8 @@ def getfairysheet(number):
 
     ids = []
     x = 1
-    while (x <= number):
+    totalfairies = int(numberoffairies('m') + numberoffairies('f'))
+    while (x <= number) and (x <= totalfairies):
         ids.append(x)
         x = x + 1
 

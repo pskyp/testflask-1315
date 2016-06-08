@@ -363,6 +363,7 @@ Wolfrider
 Wonderdew
 Wonderdust
 Wonderglade
+Wonderlust
 Woodchild
 Woodholm
 Woodnut
@@ -377,4 +378,4 @@ Rainbowglimmer
 Windwand
 Silverembers
 Winddancer
-MoonEmbers
+Moonembers

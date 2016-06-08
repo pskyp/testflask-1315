@@ -1,5 +1,7 @@
 import urllib
 
+from PIL import Image
+
 import FairyImage
 from flask import Flask
 from flask import render_template
@@ -11,9 +13,9 @@ def index():
     import StringIO
 
     fairy = FairyImage.getrandomfairy()
-    canvas = FairyImage.getfairypicfromdb(fairy['name'])
-    # canvas = FairyImage.getfairyimage(fairy)
-    # canvas = FairyImage.getrandomfairypic()
+    imgstring = fairy['image']
+    filelike = StringIO.StringIO(imgstring)
+    canvas = Image.open(filelike)
     canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     output=StringIO.StringIO()
     canvas.save(output, format="JPEG")
@@ -21,9 +23,6 @@ def index():
     output.close()
 
     return render_template("main.html",contents=urllib.quote(contents.rstrip('\n')))
-    # FairyImage.create_fairy_table('FAIRY_TBL')
-    # FairyImage.resetDB(100)
-    # return ('hello world')
 
 
 @app.route('/home')
@@ -31,8 +30,9 @@ def home():
     import StringIO
 
     fairy = FairyImage.getrandomfairy()
-    canvas = FairyImage.getfairypicfromdb(fairy['name'])
-    # canvas = FairyImage.getfairyimage(fairy)
+    imgstring = fairy['image']
+    filelike = StringIO.StringIO(imgstring)
+    canvas = Image.open(filelike)
     canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     output=StringIO.StringIO()
     canvas.save(output, format="JPEG")
@@ -42,11 +42,10 @@ def home():
     return render_template("main.html",contents=urllib.quote(contents.rstrip('\n')))
 
 
-@app.route('/montage20')
-def montage20():
-    # print 20 random fairies
+@app.route('/montage8')
+def montage8():
+    # print 8 random fairies
     import StringIO
-    from PIL import Image
     size = 800, 550
     canvas = FairyImage.getrandomfairysheet(8)
     canvas.thumbnail(size, Image.ANTIALIAS)
@@ -58,11 +57,10 @@ def montage20():
     return render_template('montage.html', contents=urllib.quote(contents.rstrip('\n')))
 
 
-@app.route('/montage100')
-# print first 100 fairies
-def montageal00():
+@app.route('/montage12')
+# print first 12 fairies
+def montagea12():
     import StringIO
-    from PIL import Image
     size = 800, 550
     canvas = FairyImage.getfairysheet(12)
     canvas.thumbnail(size, Image.ANTIALIAS)
@@ -73,6 +71,20 @@ def montageal00():
 
     return render_template('montage12.html', contents=urllib.quote(contents.rstrip('\n')))
 
+
+@app.route('/montage100')
+# print first 80 fairies
+def montage100():
+    import StringIO
+    size = 1200, 4400
+    canvas = FairyImage.getfairysheet(80)
+    canvas.thumbnail(size, Image.ANTIALIAS)
+    output = StringIO.StringIO()
+    canvas.save(output, format="JPEG")
+    contents = output.getvalue().encode('base64')
+    output.close()
+
+    return render_template('montage100.html', contents=urllib.quote(contents.rstrip('\n')))
 
 @app.route('/db')
 def db():
@@ -177,7 +189,10 @@ def addbfairy():
 def fairycardimage():
     import StringIO
     fairy = FairyImage.getrandomfairy()
-    canvas = FairyImage.getfairypicfromdb(fairy['name'])
+    imgstring = fairy['image']
+    filelike = StringIO.StringIO(imgstring)
+    canvas = Image.open(filelike)
+    # canvas = FairyImage.getfairypicfromdb(fairy['name'])
     canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     canvas = FairyImage.addFairyChartoImage(canvas, fairy)
     output = StringIO.StringIO()
@@ -192,7 +207,11 @@ def fairycardimage():
 def fairydetailcardimage():
     import StringIO
     fairy = FairyImage.getrandomfairy()
-    canvas = FairyImage.getfairypicfromdb(fairy['name'])
+    imgstring = fairy['image']
+    filelike = StringIO.StringIO(imgstring)
+    canvas = Image.open(filelike)
+
+    # canvas = FairyImage.getfairypicfromdb(fairy['name'])
     canvas = FairyImage.addFairyNametoImage(canvas, fairy)
     canvas = FairyImage.addFairyChartoImage(canvas, fairy)
     canvas = FairyImage.addFairydetaildstoImage(canvas, fairy)
