@@ -1194,12 +1194,12 @@ def resetDB(x):
 # drops Fairy table and creates a new table with x number of random fairies
     delete_table("FAIRY_TBL")
     create_fairy_table("FAIRY_TBL")
-for c in range(0, x):
-    if (random.randint(0, 1) == 0):
-        createfairy('m')
-    else:
-        createfairy('f')
-return
+    for c in range(0, x):
+        if (random.randint(0, 1) == 0):
+            createfairy('m')
+        else:
+            createfairy('f')
+    return
 
 
 def createrandomfairies(x):
