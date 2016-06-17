@@ -320,9 +320,9 @@ def get_multiple_fairies_from_db(dbname, ids):
 
 
 
-# TODO delete Fairy from file
 
-# TODO CREATE SPROTE SHEET TABLE
+
+# TODO CREATE SPRITE SHEET TABLE
 #  TODO SAVE SPRITESHEET
 # TODO LOAD SPRITE SHEET
 
@@ -1141,7 +1141,7 @@ def getrandomfairy():
         Ids.append(l[0][x][0])
     for y in range(0, numboy - 1):
         Ids.append(l[1][y][0])
-    fairy = get_fairy_from_db("FAIRY_TBL", int(Ids[random.randint(0, len(Ids))]))
+    fairy = get_fairy_from_db("FAIRY_TBL", int(Ids[random.randint(0, len(Ids)-1)]))
     return fairy
 
 def main(argv):
