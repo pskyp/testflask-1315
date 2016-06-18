@@ -1,12 +1,12 @@
 import urllib
 
 from PIL import Image
-
+import pymysql.cursors
 import FairyImage
 from flask import Flask
 from flask import render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required
+from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user
 import os
 import sys
 
@@ -21,17 +21,22 @@ CLOUDSQL_INSTANCE = 'us-central:fairydb'
 # Create app
 app = Flask(__name__)
 # Create database connection object
-db = SQLAlchemy(app)
+
 
 
 app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'super-secret'
 app.config['SECURITY_REGISTERABLE'] = True
+app.config['SECURITY_POST_LOGIN_VIEW'] = '/home'
+app.config['SECURITY_POST_REGISTER_VIEW'] = '/home'
+
 
 if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql:///root:TestFlask@104.197.55.21/My_Fairy_Kingdom'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:TestFlask@104.197.55.21/My_Fairy_Kingdom'
 else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://dbuser:TestFlask@localhost/My_Fairy_Kingdom'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://dbuser:TestFlask@127.0.0.1/my_fairy_kingdom'
+
+db = SQLAlchemy(app)
 
 
 # Define models
@@ -56,6 +61,15 @@ class User(db.Model, UserMixin):
 # Setup Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
+# db.create_all()
+# user_datastore.create_user(email='pierswilcox@gmail.com', password='pierswilcox')
+# db.session.commit()
+# user_datastore.create_role(name='admin',description='site admin role')
+# user_datastore.create_role(name='basic',description='free user')
+# user_datastore.create_role(name='premium',description='paid user')
+role = user_datastore.find_role('admin')
+user_datastore.add_role_to_user(user_datastore.find_user(email='pierswilcox@gmail.com'),role)
+db.session.commit()
 
 # Create a user to test with
 # @app.before_first_request
@@ -81,7 +95,7 @@ def index():
     contents= output.getvalue().encode('base64')
     output.close()
 
-    return render_template("main.html",contents=urllib.quote(contents.rstrip('\n')))
+    return render_template("index.html",contents=urllib.quote(contents.rstrip('\n')))
 
 
 @app.errorhandler(404)
@@ -94,6 +108,9 @@ def page_not_found(e):
 def application_error(e):
     """Return a custom 500 error."""
     return 'Sorry, unexpected error: {}'.format(e), 500
+
+
+
 
 @app.route('/home')
 def home():
@@ -108,8 +125,9 @@ def home():
     canvas.save(output, format="JPEG")
     contents= output.getvalue().encode('base64')
     output.close()
-
-    return render_template("main.html",contents=urllib.quote(contents.rstrip('\n')))
+    isadmin = current_user.has_role('admin')
+    loggedin = current_user.is_authenticated
+    return render_template("main.html",contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
 
 @app.route('/montage8')
@@ -123,8 +141,9 @@ def montage8():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-
-    return render_template('montage.html', contents=urllib.quote(contents.rstrip('\n')))
+    isadmin = current_user.has_role('admin')
+    loggedin = current_user.is_authenticated
+    return render_template('montage.html', contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
 
 @app.route('/montage12')
@@ -138,8 +157,9 @@ def montagea12():
     canvas.save(output, format="JPEG")
     contents= output.getvalue().encode('base64')
     output.close()
-
-    return render_template('montage12.html', contents=urllib.quote(contents.rstrip('\n')))
+    isadmin = current_user.has_role('admin')
+    loggedin = current_user.is_authenticated
+    return render_template('montage12.html', contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
 
 @app.route('/montage100')
@@ -153,8 +173,9 @@ def montage100():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-
-    return render_template('montage100.html', contents=urllib.quote(contents.rstrip('\n')))
+    isadmin = current_user.has_role('admin')
+    loggedin = current_user.is_authenticated
+    return render_template('montage100.html', contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
 @app.route('/db')
 @login_required
@@ -163,9 +184,9 @@ def db():
     bfairies = FairyImage.numberoffairies('m')
     tfairies = bfairies+gfairies
     fairyref = FairyImage.getfairyreferences('FAIRY_TBL')
+    loggedin = current_user.is_authenticated
 
-
-    return render_template("dblist.html",gfairies=str(gfairies), bfairies=str(bfairies),tfairies=str(tfairies),fairyref=str(fairyref))
+    return render_template("dblist.html",gfairies=str(gfairies), bfairies=str(bfairies),tfairies=str(tfairies),fairyref=str(fairyref), auth=loggedin)
 
 
 @app.route('/deletedbtbl')
@@ -176,9 +197,9 @@ def deletedb_TBL():
     bfairies = FairyImage.numberoffairies('m')
     tfairies = bfairies + gfairies
     fairyref = FairyImage.getfairyreferences('FAIRY_TBL')
-
+    loggedin = current_user.is_authenticated
     return render_template("dblist.html", gfairies=str(gfairies), bfairies=str(bfairies), tfairies=str(tfairies),
-                           fairyref=str(fairyref))
+                           fairyref=str(fairyref), auth=loggedin)
 
 
 @app.route('/createdbtbl')
@@ -188,9 +209,9 @@ def createdb_TBL():
     bfairies = FairyImage.numberoffairies('m')
     tfairies = bfairies + gfairies
     fairyref = FairyImage.getfairyreferences('FAIRY_TBL')
-
+    loggedin = current_user.is_authenticated
     return render_template("dblist.html", gfairies=str(gfairies), bfairies=str(bfairies), tfairies=str(tfairies),
-                           fairyref=str(fairyref))
+                           fairyref=str(fairyref), auth=loggedin)
 
 
 @app.route('/resetdb')
@@ -200,9 +221,9 @@ def resetDB():
     bfairies = FairyImage.numberoffairies('m')
     tfairies = bfairies + gfairies
     fairyref = FairyImage.getfairyreferences('FAIRY_TBL')
-
+    loggedin = current_user.is_authenticated
     return render_template("dblist.html", gfairies=str(gfairies), bfairies=str(bfairies), tfairies=str(tfairies),
-                           fairyref=str(fairyref))
+                           fairyref=str(fairyref), auth=loggedin)
 
 
 @app.route('/addgfairy')
@@ -215,14 +236,14 @@ def addgfairy():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-
+    loggedin = current_user.is_authenticated
     gfairies = FairyImage.numberoffairies('f')
     bfairies = FairyImage.numberoffairies('m')
     tfairies = bfairies + gfairies
     fairyref = FairyImage.getfairyreferences('FAIRY_TBL')
 
     return render_template("dblist2.html", gfairies=str(gfairies), bfairies=str(bfairies), tfairies=str(tfairies),
-                           fairyref=str(fairyref), contents=urllib.quote(contents.rstrip('\n')))
+                           fairyref=str(fairyref), contents=urllib.quote(contents.rstrip('\n')), auth=loggedin)
 
 
 @app.route('/10newfairy')
@@ -232,8 +253,9 @@ def add10randomfairy():
     bfairies = FairyImage.numberoffairies('m')
     tfairies = bfairies + gfairies
     fairyref = FairyImage.getfairyreferences('FAIRY_TBL')
+    loggedin = current_user.is_authenticated
     return render_template("dblist.html", gfairies=str(gfairies), bfairies=str(bfairies), tfairies=str(tfairies),
-                           fairyref=str(fairyref))
+                           fairyref=str(fairyref), auth=loggedin)
 
 
 @app.route('/addbfairy')
@@ -246,14 +268,14 @@ def addbfairy():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-
+    loggedin = current_user.is_authenticated
     gfairies = FairyImage.numberoffairies('f')
     bfairies = FairyImage.numberoffairies('m')
     tfairies = bfairies + gfairies
     fairyref = FairyImage.getfairyreferences('FAIRY_TBL')
 
     return render_template("dblist2.html", gfairies=str(gfairies), bfairies=str(bfairies), tfairies=str(tfairies),
-                           fairyref=str(fairyref), contents=urllib.quote(contents.rstrip('\n')))
+                           fairyref=str(fairyref), contents=urllib.quote(contents.rstrip('\n')), auth=loggedin)
 
 
 @app.route('/fcard')
@@ -270,8 +292,9 @@ def fairycardimage():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-
-    return render_template("main.html", contents=urllib.quote(contents.rstrip('\n')))
+    isadmin = current_user.has_role('admin')
+    loggedin = current_user.is_authenticated
+    return render_template("main.html", contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
 
 @app.route('/fdetailcard')
@@ -290,8 +313,9 @@ def fairydetailcardimage():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-
-    return render_template("main.html", contents=urllib.quote(contents.rstrip('\n')))
+    isadmin = current_user.has_role('admin')
+    loggedin = current_user.is_authenticated
+    return render_template("main.html", contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
 
 if __name__ == '__main__':
