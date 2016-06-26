@@ -188,11 +188,11 @@ def montagea12():
 
 
 @app.route('/montage100')
-# print first 80 fairies
+# print first 48 fairies
 def montage100():
     import StringIO
     size = 1200, 4400
-    canvas = FairyImage.getfairysheet(80)
+    canvas = FairyImage.getfairysheet(48)
     canvas.thumbnail(size, Image.ANTIALIAS)
     output = StringIO.StringIO()
     canvas.save(output, format="JPEG")
