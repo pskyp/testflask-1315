@@ -6,7 +6,7 @@ import FairyImage
 from flask import Flask
 from flask import render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user
+from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user, roles_accepted, roles_required
 import os
 import sys
 
@@ -81,9 +81,34 @@ db.session.commit()
 
 
 #views
+
 @app.route('/')
 
+def start():
+
+    return render_template("start.html")
+
+
+
+@app.route('/welcome')
+
 def index():
+    import StringIO
+    fairy = FairyImage.getrandomfairy()
+    imgstring = fairy['image']
+    filelike = StringIO.StringIO(imgstring)
+    canvas = Image.open(filelike)
+    canvas = FairyImage.addFairyNametoImage(canvas, fairy)
+    output=StringIO.StringIO()
+    canvas.save(output, format="JPEG")
+    contents= output.getvalue().encode('base64')
+    output.close()
+
+    return render_template("index.html",contents=urllib.quote(contents.rstrip('\n')))
+
+@app.route('/login')
+
+def login():
     import StringIO
     fairy = FairyImage.getrandomfairy()
     imgstring = fairy['image']
@@ -178,7 +203,7 @@ def montage100():
     return render_template('montage100.html', contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
 @app.route('/db')
-@login_required
+@roles_accepted('admin')
 def db():
     gfairies = FairyImage.numberoffairies('f')
     bfairies = FairyImage.numberoffairies('m')
@@ -190,6 +215,7 @@ def db():
 
 
 @app.route('/deletedbtbl')
+@roles_accepted('admin')
 def deletedb_TBL():
     FairyImage.delete_table('FAIRY_TBL')
 
@@ -203,6 +229,7 @@ def deletedb_TBL():
 
 
 @app.route('/createdbtbl')
+@roles_accepted('admin')
 def createdb_TBL():
     FairyImage.create_fairy_table('FAIRY_TBL')
     gfairies = FairyImage.numberoffairies('f')
@@ -215,6 +242,7 @@ def createdb_TBL():
 
 
 @app.route('/resetdb')
+@roles_accepted('admin')
 def resetDB():
     FairyImage.resetDB(15)
     gfairies = FairyImage.numberoffairies('f')

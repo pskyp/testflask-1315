@@ -1,11 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+body {
+    opacity: 1;
+    transition: 1s opacity;
+}
+body.fade-out {
+    opacity: 0;
+    transition: none;
+}
+
+</style>
+
+
 <head>
+
+
     <meta charset="UTF-8">
     <title>Fairy Kingdom</title>
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+ <script>
+  $(function() {
+    $('body').removeClass('fade-out');
+});
+ </script>
+
+
 </head>
 <body>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
 
 Welcome to the Fairy Kingdom <br>
 <img src="data:image/png;base64,{{contents}}"/>
