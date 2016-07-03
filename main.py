@@ -67,9 +67,9 @@ security = Security(app, user_datastore)
 # user_datastore.create_role(name='admin',description='site admin role')
 # user_datastore.create_role(name='basic',description='free user')
 # user_datastore.create_role(name='premium',description='paid user')
-role = user_datastore.find_role('admin')
-user_datastore.add_role_to_user(user_datastore.find_user(email='pierswilcox@gmail.com'),role)
-db.session.commit()
+# role = user_datastore.find_role('admin')
+# user_datastore.add_role_to_user(user_datastore.find_user(email='pierswilcox@gmail.com'),role)
+# db.session.commit()
 
 # Create a user to test with
 # @app.before_first_request
