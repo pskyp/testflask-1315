@@ -10,10 +10,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user, roles_accepted, roles_required
 import os
 import sys
-# import sendgrid
-# from sendgrid.helpers.mail import *
-import sendgrid
-from sendgrid.helpers import mail
+from google.appengine.api import mail
+
 
 
 
@@ -104,18 +102,15 @@ def start():
 # EMAIL SET UP
 @security.send_mail_task
 def send_email(msg):
-    sg = sendgrid.SendGridAPIClient(apikey="KH1NLFb-TmG9rN7EBwCvGw")
-    content = mail.Content("text/plain", "more made up shot")
-    to_email =mail.Email("pierswilcox@gmail.com")
-    from_email= mail.Email("pierswilcox@gmail.com")
-    subject = "test"
-    message = mail.Mail(from_email, subject, to_email, content)
-    response = sg.client.mail.send.post(request_body=message.get())
+    user_address = ("pierswilcox@gmail.com")
+    subject1 = msg.subject
+    body1 = msg.body
 
-    return response
-    # print(response.status_code)
-    # print(response.body)
-    # print(response.headers)
+    mail.send_mail(sender="admin@myfairykingdom.com",
+                   to=user_address,
+                   subject=subject1,
+                   body=body1)
+
 
 @app.route('/welcome')
 
