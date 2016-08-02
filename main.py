@@ -1,6 +1,7 @@
 import urllib
 
 from PIL import Image
+
 import pymysql.cursors
 import FairyImage
 from flask import Flask
@@ -9,6 +10,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user, roles_accepted, roles_required
 import os
 import sys
+# import sendgrid
+# from sendgrid.helpers.mail import *
+import sendgrid
+from sendgrid.helpers import mail
+
 
 
 sys.path.insert(1, os.path.join(os.path.abspath('.'), "virtenv/lib/python2.7/site-packages"))
@@ -23,12 +29,19 @@ app = Flask(__name__)
 # Create database connection object
 
 
-
+# Basic Setup flags
 app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'super-secret'
 app.config['SECURITY_REGISTERABLE'] = True
 app.config['SECURITY_POST_LOGIN_VIEW'] = '/home'
 app.config['SECURITY_POST_REGISTER_VIEW'] = '/home'
+
+# password encryption and salt setup
+app.config['SECURITY_PASSWORD_HASH'] = 'sha512_crypt'
+app.config['SECURITY_PASSWORD_SALT'] = 'fhasdgihwntlgy8f'
+
+
+
 
 
 if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
@@ -88,7 +101,21 @@ def start():
 
     return render_template("start.html")
 
+# EMAIL SET UP
+@security.send_mail_task
+def send_email(msg):
+    sg = sendgrid.SendGridAPIClient(apikey="KH1NLFb-TmG9rN7EBwCvGw")
+    content = mail.Content("text/plain", "more made up shot")
+    to_email =mail.Email("pierswilcox@gmail.com")
+    from_email= mail.Email("pierswilcox@gmail.com")
+    subject = "test"
+    message = mail.Mail(from_email, subject, to_email, content)
+    response = sg.client.mail.send.post(request_body=message.get())
 
+    return response
+    # print(response.status_code)
+    # print(response.body)
+    # print(response.headers)
 
 @app.route('/welcome')
 
