@@ -12,10 +12,12 @@ import os
 import sys
 from google.appengine.api import mail
 import random
+import string
 import flask_admin
 from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
 from flask import Flask, url_for, redirect, render_template, request, abort
+from flask_security.utils import encrypt_password
 
 
 
@@ -76,6 +78,8 @@ class Role(db.Model, RoleMixin):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(255))
+    last_name = db.Column(db.String(255))
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
     active = db.Column(db.Boolean())
@@ -89,21 +93,62 @@ class User(db.Model, UserMixin):
 # Setup Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
-# db.create_all()
-# user_datastore.create_user(email='pierswilcox@gmail.com', password='pierswilcox')
+
+
+# user_datastore.create_user(first_name='Admin',  last_name='admin', password=encrypt_password('admin'), email= 'admin', roles = 'superuser' )
 # db.session.commit()
-# user_datastore.create_role(name='admin',description='site admin role')
-# user_datastore.create_role(name='basic',description='free user')
-# user_datastore.create_role(name='premium',description='paid user')
-# role = user_datastore.find_role('admin')
+
+# POPULATE WITH DUMMY USERS
+
+
+# Create a user to test with
+
+# db.create_all()
+# user_datastore.create_user(email='pierswilcox@gmail.com', password='pierswilcox',first_name='Piers')
+# db.session.commit()
+# user_datastore.create_role(name='superuser',description='site admin role')
+# user_datastore.create_role(name='user',description='free user')
+# role = user_datastore.find_role('superuser')
 # user_datastore.add_role_to_user(user_datastore.find_user(email='pierswilcox@gmail.com'),role)
 # db.session.commit()
 
-# Create a user to test with
-# @app.before_first_request
-# def create_user():
-#     db.create_all()
-#     user_datastore.create_user(email='pierswilcox@gmail.com', password='pierswilcox')
+# db.create_all()
+#
+# with app.app_context():
+#     user_role = Role(name='user')
+#     super_user_role = Role(name='superuser')
+#     db.session.add(user_role)
+#     db.session.add(super_user_role)
+#     db.session.commit()
+#
+#     test_user = user_datastore.create_user(
+#         first_name='Admin',
+#         email='admin',
+#         password='admin',
+#         roles=[user_role, super_user_role]
+#     )
+#
+#     # first_names = [
+#     #     'Harry', 'Amelia', 'Oliver', 'Jack', 'Isabella', 'Charlie', 'Sophie', 'Mia',
+#     #     'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
+#     #     'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
+#     # ]
+#     # last_names = [
+#     #     'Brown', 'Smith', 'Patel', 'Jones', 'Williams', 'Johnson', 'Taylor', 'Thomas',
+#     #     'Roberts', 'Khan', 'Lewis', 'Jackson', 'Clarke', 'James', 'Phillips', 'Wilson',
+#     #     'Ali', 'Mason', 'Mitchell', 'Rose', 'Davis', 'Davies', 'Rodriguez', 'Cox', 'Alexander'
+#     # ]
+#     #
+#     # for i in range(len(first_names)):
+#     #     tmp_email = first_names[i].lower() + "." + last_names[i].lower() + "@example.com"
+#     #     tmp_pass = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(10))
+#     #     user_datastore.create_user(
+#     #         first_name=first_names[i],
+#     #         last_name=last_names[i],
+#     #         email=tmp_email,
+#     #         password=encrypt_password(tmp_pass),
+#     #         roles=[user_role, ]
+#     #     )
 #     db.session.commit()
 
 
@@ -253,7 +298,7 @@ def home():
     canvas.save(output, format="JPEG")
     contents= output.getvalue().encode('base64')
     output.close()
-    isadmin = current_user.has_role('admin')
+    isadmin = current_user.has_role('superuser')
     loggedin = current_user.is_authenticated
     return render_template("main.html",contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
@@ -269,7 +314,7 @@ def montage8():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-    isadmin = current_user.has_role('admin')
+    isadmin = current_user.has_role('superuser')
     loggedin = current_user.is_authenticated
     return render_template('montage.html', contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
@@ -285,7 +330,7 @@ def montagea12():
     canvas.save(output, format="JPEG")
     contents= output.getvalue().encode('base64')
     output.close()
-    isadmin = current_user.has_role('admin')
+    isadmin = current_user.has_role('superuser')
     loggedin = current_user.is_authenticated
     return render_template('montage12.html', contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
@@ -301,12 +346,12 @@ def montage100():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-    isadmin = current_user.has_role('admin')
+    isadmin = current_user.has_role('superuser')
     loggedin = current_user.is_authenticated
     return render_template('montage100.html', contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
 @app.route('/db')
-@roles_accepted('admin')
+@roles_accepted('superuser')
 def db():
     gfairies = FairyImage.numberoffairies('f')
     bfairies = FairyImage.numberoffairies('m')
@@ -318,7 +363,7 @@ def db():
 
 
 @app.route('/deletedbtbl')
-@roles_accepted('admin')
+@roles_accepted('superuser')
 def deletedb_TBL():
     FairyImage.delete_table('FAIRY_TBL')
 
@@ -332,7 +377,7 @@ def deletedb_TBL():
 
 
 @app.route('/createdbtbl')
-@roles_accepted('admin')
+@roles_accepted('superuser')
 def createdb_TBL():
     FairyImage.create_fairy_table('FAIRY_TBL')
     gfairies = FairyImage.numberoffairies('f')
@@ -345,7 +390,7 @@ def createdb_TBL():
 
 
 @app.route('/resetdb')
-@roles_accepted('admin')
+@roles_accepted('superuser')
 def resetDB():
     FairyImage.resetDB(15)
     gfairies = FairyImage.numberoffairies('f')
@@ -423,7 +468,7 @@ def fairycardimage():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-    isadmin = current_user.has_role('admin')
+    isadmin = current_user.has_role('superuser')
     loggedin = current_user.is_authenticated
     return render_template("main.html", contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
@@ -444,7 +489,7 @@ def fairydetailcardimage():
     canvas.save(output, format="JPEG")
     contents = output.getvalue().encode('base64')
     output.close()
-    isadmin = current_user.has_role('admin')
+    isadmin = current_user.has_role('superuser')
     loggedin = current_user.is_authenticated
     return render_template("main.html", contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
