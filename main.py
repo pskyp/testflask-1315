@@ -11,6 +11,7 @@ from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMix
 import os
 import sys
 from google.appengine.api import mail
+import random
 
 
 
@@ -31,6 +32,10 @@ app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'super-secret'
 app.config['SECURITY_REGISTERABLE'] = True
+app.config['SECURITY_CONFIRMABLE'] = True
+app.config['SECURITY_RECOVERABLE'] = True
+app.config['SECURITY_CHANGEABLE'] = True
+
 app.config['SECURITY_POST_LOGIN_VIEW'] = '/home'
 app.config['SECURITY_POST_REGISTER_VIEW'] = '/home'
 
@@ -102,11 +107,11 @@ def start():
 # EMAIL SET UP
 @security.send_mail_task
 def send_email(msg):
-    user_address = ("pierswilcox@gmail.com")
+    user_address = msg.recipients
     subject1 = msg.subject
     body1 = msg.body
 
-    mail.send_mail(sender="admin@myfairykingdom.com",
+    mail.send_mail(sender="admin@android-it.co.uk",
                    to=user_address,
                    subject=subject1,
                    body=body1)
@@ -116,17 +121,34 @@ def send_email(msg):
 
 def index():
     import StringIO
-    fairy = FairyImage.getrandomfairy()
-    imgstring = fairy['image']
-    filelike = StringIO.StringIO(imgstring)
-    canvas = Image.open(filelike)
-    canvas = FairyImage.addFairyNametoImage(canvas, fairy)
-    output=StringIO.StringIO()
+    # fairy = FairyImage.getrandomfairy()
+    # imgstring = fairy['image']
+    # filelike = StringIO.StringIO(imgstring)
+    # canvas = Image.open(filelike)
+    # canvas = FairyImage.addFairyNametoImage(canvas, fairy)
+    # output=StringIO.StringIO()
+    # canvas.save(output, format="JPEG")
+    # contents= output.getvalue().encode('base64')
+    # output.close()
+    #
+    # return render_template("index.html",contents=urllib.quote(contents.rstrip('\n')))
+    x = random.randint(1,3)
+    if (x==1):
+        princesses=Image.open("static/Princess_Tabitha.png")
+        name = ("Tabitha")
+    elif (x==2):
+        princesses=Image.open("static/Princess_Esme.png")
+        name = ("Esme")
+    else:
+        princesses=Image.open("static/Princess_Violet.png")
+        name = ("Violet")
+    canvas = princesses
+    output = StringIO.StringIO()
     canvas.save(output, format="JPEG")
-    contents= output.getvalue().encode('base64')
-    output.close()
+    contents = output.getvalue().encode('base64')
+    return render_template("index.html", contents=urllib.quote(contents.rstrip('\n')),Princess_name =name )
 
-    return render_template("index.html",contents=urllib.quote(contents.rstrip('\n')))
+
 
 @app.route('/login')
 
