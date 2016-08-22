@@ -493,7 +493,7 @@ def fairydetailcardimage():
 @roles_accepted('superuser')
 def pdfcard():
     PAGE_size = 180,252
-    IMG_size = 360,504
+    IMG_size = 270,378
 
 
     l = FairyImage.getfairyreferences("FAIRY_TBL")
@@ -520,7 +520,7 @@ def pdfcard():
             filelike = StringIO.StringIO(imgstring)
             pic = Image.open(filelike)
             pic.thumbnail(IMG_size, Image.ANTIALIAS)
-            c.drawInlineImage(pic, -43, -100, width=None, height=None)
+            c.drawInlineImage(pic, -5, 35, width=None, height=None)
             c.showPage()
             x=x+1
 
@@ -532,7 +532,7 @@ def pdfcard():
             filelike = StringIO.StringIO(imgstring)
             pic= Image.open(filelike)
             pic.thumbnail(IMG_size, Image.ANTIALIAS)
-            c.drawInlineImage(pic, -43, -100, width=None, height=None)
+            c.drawInlineImage(pic, -5, 35, width=None, height=None)
             c.showPage()
             x = x + 1
 
