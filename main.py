@@ -1,26 +1,20 @@
+import StringIO
+import os
+import random
+import sys
 import urllib
 
 from PIL import Image
-
-import pymysql.cursors
-import FairyImage
-from flask import Flask
-from flask import render_template
-from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user, roles_accepted, roles_required
-import os
-import sys
 from google.appengine.api import mail
-import random
-import string
+from reportlab.pdfgen import canvas
+from PyPDF2 import PdfFileWriter, PdfFileReader
+import FairyImage
 import flask_admin
-from flask_admin.contrib import sqla
-from flask_admin import helpers as admin_helpers
 from flask import Flask, url_for, redirect, render_template, request, abort
-from flask_security.utils import encrypt_password
-
-
-
+from flask_admin import helpers as admin_helpers
+from flask_admin.contrib import sqla
+from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, current_user, roles_accepted
+from flask_sqlalchemy import SQLAlchemy
 
 
 sys.path.insert(1, os.path.join(os.path.abspath('.'), "virtenv/lib/python2.7/site-packages"))
@@ -42,10 +36,10 @@ app.config['SECURITY_REGISTERABLE'] = True
 app.config['SECURITY_CONFIRMABLE'] = True
 app.config['SECURITY_RECOVERABLE'] = True
 app.config['SECURITY_CHANGEABLE'] = True
-app.config['SECURITY_LOGIN_WITHOUT_CONFIRMATION']= True
+app.config['SECURITY_LOGIN_WITHOUT_CONFIRMATION']= False
 
 app.config['SECURITY_POST_LOGIN_VIEW'] = '/home'
-app.config['SECURITY_POST_REGISTER_VIEW'] = '/home'
+app.config['SECURITY_POST_REGISTER_VIEW'] = '/postregister'
 
 # password encryption and salt setup
 app.config['SECURITY_PASSWORD_HASH'] = 'sha512_crypt'
@@ -194,7 +188,7 @@ def send_email(msg):
     subject1 = msg.subject
     body1 = msg.body
 
-    mail.send_mail(sender="admin@android-it.co.uk",
+    mail.send_mail(sender="admin@myfairykingdom.com",
                    to=user_address,
                    subject=subject1,
                    body=body1)
@@ -283,7 +277,9 @@ def application_error(e):
     return 'Sorry, unexpected error: {}'.format(e), 500
 
 
-
+@app.route('/postregister')
+def postregister():
+    return render_template("postregister.html")
 
 @app.route('/home')
 def home():
@@ -475,7 +471,7 @@ def fairycardimage():
 
 @app.route('/fdetailcard')
 def fairydetailcardimage():
-    import StringIO
+
     fairy = FairyImage.getrandomfairy()
     imgstring = fairy['image']
     filelike = StringIO.StringIO(imgstring)
@@ -493,10 +489,56 @@ def fairydetailcardimage():
     loggedin = current_user.is_authenticated
     return render_template("main.html", contents=urllib.quote(contents.rstrip('\n')),admin =isadmin, auth=loggedin)
 
+@app.route('/pdfcard')
+@roles_accepted('superuser')
+def pdfcard():
+    PAGE_size = 180,252
+    IMG_size = 360,504
 
 
+    l = FairyImage.getfairyreferences("FAIRY_TBL")
+    numgirl = (len(l[0]))
+    numboy = (len(l[1]))
+    Ids = []
+    for x in range(0, numgirl - 1):
+        Ids.append(l[0][x][0])
+    for y in range(0, numboy - 1):
+        Ids.append(l[1][y][0])
+
+    fairys = FairyImage.get_multiple_fairies_from_db("FAIRY_TBL",Ids)
+
+    x=0
 
 
+    c = canvas.Canvas("carddeck.pdf", pagesize=PAGE_size)
+
+    if (Ids.__len__()<50):
+        while (x<(len(Ids)-1)):
+            # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
+            fairy = fairys[x]
+            imgstring = fairy['image']
+            filelike = StringIO.StringIO(imgstring)
+            pic = Image.open(filelike)
+            pic.thumbnail(IMG_size, Image.ANTIALIAS)
+            c.drawInlineImage(pic, -43, -100, width=None, height=None)
+            c.showPage()
+            x=x+1
+
+    else :
+        while (x < 50):
+            # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
+            fairy = fairys[x]
+            imgstring = fairy['image']
+            filelike = StringIO.StringIO(imgstring)
+            pic= Image.open(filelike)
+            pic.thumbnail(IMG_size, Image.ANTIALIAS)
+            c.drawInlineImage(pic, -43, -100, width=None, height=None)
+            c.showPage()
+            x = x + 1
+
+    c.save()
+
+    return redirect('/home')
 
 if __name__ == '__main__':
     app.run(debug=True)
