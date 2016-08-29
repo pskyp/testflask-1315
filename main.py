@@ -4,6 +4,14 @@ import random
 import sys
 import urllib
 
+from reportlab.lib.colors import HexColor
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4, cm,landscape
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, Table, TableStyle, Image
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.lib import colors
+from reportlab.lib.units import inch
 import PyPDF2
 from PIL import Image
 from flask import make_response
@@ -22,7 +30,7 @@ from flask_admin.contrib import sqla
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, current_user, roles_accepted
 from flask_sqlalchemy import SQLAlchemy
 from reportlab.lib.pagesizes import A4
-
+from reportlab.platypus import Table
 sys.path.insert(1, os.path.join(os.path.abspath('.'), "virtenv/lib/python2.7/site-packages"))
 
 CLOUDSQL_PROJECT = 'testflask-1315'
@@ -496,14 +504,6 @@ def fairydetailcardimage():
 @app.route('/pdfcard')
 @roles_accepted('superuser')
 def pdfcard():
-    try:
-        os.remove("static/carddeck.pdf")
-    except OSError:
-        pass
-    try:
-        os.remove("static/deck.pdf")
-    except OSError:
-        pass
 
     PAGE_size = 180, 252
     IMG_size = 270, 378
@@ -523,6 +523,30 @@ def pdfcard():
     pdf = StringIO.StringIO()
     c = canvas.Canvas(pdf, pagesize=PAGE_size)
 
+    # if (Ids.__len__() < 50):
+    #     while (x < (len(Ids) - 1)):
+    #         # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
+    #         fairy = fairys[x]
+    #         imgstring = fairy['image']
+    #         filelike = StringIO.StringIO(imgstring)
+    #         pic = Image.open(filelike)
+    #         pic.thumbnail(IMG_size, Image.ANTIALIAS)
+    #         c.drawInlineImage(pic, -5, 35, width=None, height=None)
+    #         c.showPage()
+    #         x = x + 1
+    #
+    # else:
+    #     while (x < 50):
+    #         # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
+    #         fairy = fairys[x]
+    #         imgstring = fairy['image']
+    #         filelike = StringIO.StringIO(imgstring)
+    #         pic = Image.open(filelike)
+    #         pic.thumbnail(IMG_size, Image.ANTIALIAS)
+    #         c.drawInlineImage(pic, -5, 35, width=None, height=None)
+    #         c.showPage()
+    #         x = x + 1
+
     if (Ids.__len__() < 50):
         while (x < (len(Ids) - 1)):
             # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
@@ -530,8 +554,21 @@ def pdfcard():
             imgstring = fairy['image']
             filelike = StringIO.StringIO(imgstring)
             pic = Image.open(filelike)
+            # img = Image(filename=filelike, width=270, height=378)
+
+            data = [[fairy['name']]]
+            table = Table(data, colWidths=180, rowHeights=252)
+            table.setStyle(TableStyle([
+                # ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('BOX', (0, 0), (-1, -1), 2, colors.palevioletred),
+                # ('BACKGROUND', (0, 0), (-1, 2), colors.lightgrey)
+            ]))
             pic.thumbnail(IMG_size, Image.ANTIALIAS)
-            c.drawInlineImage(pic, -5, 35, width=None, height=None)
+            c.drawInlineImage(pic, -5, 65, width=None, height=None)
+            table.wrapOn(c, 0, 18)
+            table.drawOn(c, 0, 18)
+            #
+
             c.showPage()
             x = x + 1
 
@@ -542,8 +579,21 @@ def pdfcard():
             imgstring = fairy['image']
             filelike = StringIO.StringIO(imgstring)
             pic = Image.open(filelike)
+            # img = Image(filename=filelike, width=270, height=378)
+
+            data = [[fairy['name']]]
+            table = Table(data, colWidths=180, rowHeights=252)
+            table.setStyle(TableStyle([
+                # ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('BOX', (0, 0), (-1, -1), 2, colors.palevioletred),
+                # ('BACKGROUND', (0, 0), (-1, 2), colors.lightgrey)
+            ]))
             pic.thumbnail(IMG_size, Image.ANTIALIAS)
-            c.drawInlineImage(pic, -5, 35, width=None, height=None)
+            c.drawInlineImage(pic, -5, 65, width=None, height=None)
+            table.wrapOn(c, 0, 18)
+            table.drawOn(c, 0, 18)
+            #
+
             c.showPage()
             x = x + 1
 
