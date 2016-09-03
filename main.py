@@ -57,6 +57,11 @@ app.config['SECURITY_POST_REGISTER_VIEW'] = '/postregister'
 app.config['SECURITY_PASSWORD_HASH'] = 'sha512_crypt'
 app.config['SECURITY_PASSWORD_SALT'] = 'fhasdgihwntlgy8f'
 
+
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
+
 if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:TestFlask@104.197.55.21/My_Fairy_Kingdom'
 else:
@@ -99,61 +104,19 @@ user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
 
 
-# user_datastore.create_user(first_name='Admin',  last_name='admin', password=encrypt_password('admin'), email= 'admin', roles = 'superuser' )
-# db.session.commit()
-
-# POPULATE WITH DUMMY USERS
 
 
-# Create a user to test with
+
+# Un COmment this code to restet the User DB and create an initial admin user : NOTE set app.config['SECURITY_LOGIN_WITHOUT_CONFIRMATION'] = True
 
 # db.create_all()
-# user_datastore.create_user(email='pierswilcox@gmail.com', password='pierswilcox',first_name='Piers')
+# user_datastore.create_user(email='Admin', password='Admin',first_name='Admin')
 # db.session.commit()
 # user_datastore.create_role(name='superuser',description='site admin role')
 # user_datastore.create_role(name='user',description='free user')
 # role = user_datastore.find_role('superuser')
 # user_datastore.add_role_to_user(user_datastore.find_user(email='pierswilcox@gmail.com'),role)
 # db.session.commit()
-
-# db.create_all()
-#
-# with app.app_context():
-#     user_role = Role(name='user')
-#     super_user_role = Role(name='superuser')
-#     db.session.add(user_role)
-#     db.session.add(super_user_role)
-#     db.session.commit()
-#
-#     test_user = user_datastore.create_user(
-#         first_name='Admin',
-#         email='admin',
-#         password='admin',
-#         roles=[user_role, super_user_role]
-#     )
-#
-#     # first_names = [
-#     #     'Harry', 'Amelia', 'Oliver', 'Jack', 'Isabella', 'Charlie', 'Sophie', 'Mia',
-#     #     'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
-#     #     'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
-#     # ]
-#     # last_names = [
-#     #     'Brown', 'Smith', 'Patel', 'Jones', 'Williams', 'Johnson', 'Taylor', 'Thomas',
-#     #     'Roberts', 'Khan', 'Lewis', 'Jackson', 'Clarke', 'James', 'Phillips', 'Wilson',
-#     #     'Ali', 'Mason', 'Mitchell', 'Rose', 'Davis', 'Davies', 'Rodriguez', 'Cox', 'Alexander'
-#     # ]
-#     #
-#     # for i in range(len(first_names)):
-#     #     tmp_email = first_names[i].lower() + "." + last_names[i].lower() + "@example.com"
-#     #     tmp_pass = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(10))
-#     #     user_datastore.create_user(
-#     #         first_name=first_names[i],
-#     #         last_name=last_names[i],
-#     #         email=tmp_email,
-#     #         password=encrypt_password(tmp_pass),
-#     #         roles=[user_role, ]
-#     #     )
-#     db.session.commit()
 
 
 
@@ -329,7 +292,7 @@ def montage8():
 def montagea12():
     import StringIO
     size = 800, 550
-    canvas = FairyImage.getfairysheet(12)
+    canvas = FairyImage.getrandomfairysheet(12)
     canvas.thumbnail(size, Image.ANTIALIAS)
     output = StringIO.StringIO()
     canvas.save(output, format="JPEG")
@@ -508,100 +471,83 @@ def pdfcard():
     PAGE_size = 180, 252
     IMG_size = 270, 378
 
-    l = FairyImage.getfairyreferences("FAIRY_TBL")
-    numgirl = (len(l[0]))
-    numboy = (len(l[1]))
-    Ids = []
-    for x in range(0, numgirl - 1):
-        Ids.append(l[0][x][0])
-    for y in range(0, numboy - 1):
-        Ids.append(l[1][y][0])
 
-    fairys = FairyImage.get_multiple_fairies_from_db("FAIRY_TBL", Ids)
+
+    # use the random ID's to populate a list of Fairies to build card deck from
+    fairys = FairyImage.get_multiplerandom_fairies_from_db("FAIRY_TBL", 60)
 
     x = 0
     pdf = StringIO.StringIO()
     c = canvas.Canvas(pdf, pagesize=PAGE_size)
 
-    # if (Ids.__len__() < 50):
-    #     while (x < (len(Ids) - 1)):
-    #         # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
-    #         fairy = fairys[x]
-    #         imgstring = fairy['image']
-    #         filelike = StringIO.StringIO(imgstring)
-    #         pic = Image.open(filelike)
-    #         pic.thumbnail(IMG_size, Image.ANTIALIAS)
-    #         c.drawInlineImage(pic, -5, 35, width=None, height=None)
-    #         c.showPage()
-    #         x = x + 1
-    #
-    # else:
-    #     while (x < 50):
-    #         # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
-    #         fairy = fairys[x]
-    #         imgstring = fairy['image']
-    #         filelike = StringIO.StringIO(imgstring)
-    #         pic = Image.open(filelike)
-    #         pic.thumbnail(IMG_size, Image.ANTIALIAS)
-    #         c.drawInlineImage(pic, -5, 35, width=None, height=None)
-    #         c.showPage()
-    #         x = x + 1
+    #  Build the cards (DOn't know why multiples of 10? but this builds a deck of 54)
+    while (x < 60):
+        # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
+        fairy = fairys[x]
+        imgstring = fairy['image']
+        filelike = StringIO.StringIO(imgstring)
+        pic = Image.open(filelike)
+        # img = Image(filename=filelike, width=270, height=378)
+        pic.thumbnail(IMG_size, Image.ANTIALIAS)
+        c.drawInlineImage(pic, 5, 75, width=None, height=None)
+        # Get Fairy Details
 
-    if (Ids.__len__() < 50):
-        while (x < (len(Ids) - 1)):
-            # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
-            fairy = fairys[x]
-            imgstring = fairy['image']
-            filelike = StringIO.StringIO(imgstring)
-            pic = Image.open(filelike)
-            # img = Image(filename=filelike, width=270, height=378)
+        name = fairy['name']
+        age = fairy['agescore']
+        kind = (int(fairy['kindscore'])/2)
+        magic = fairy['magicscore']
+        agility = fairy['agilityscore']
+        charactor = fairy['charactorscore']
 
-            data = [[fairy['name']]]
-            table = Table(data, colWidths=180, rowHeights=252)
-            table.setStyle(TableStyle([
-                # ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                ('BOX', (0, 0), (-1, -1), 2, colors.palevioletred),
-                # ('BACKGROUND', (0, 0), (-1, 2), colors.lightgrey)
-            ]))
-            pic.thumbnail(IMG_size, Image.ANTIALIAS)
-            c.drawInlineImage(pic, -5, 65, width=None, height=None)
-            table.wrapOn(c, 0, 18)
-            table.drawOn(c, 0, 18)
-            #
+                  # define a large font
+        c.setFont("Helvetica", 16)
+        # choose some colors
 
-            c.showPage()
-            x = x + 1
+        c.setStrokeColorRGB(0.2, 0.5, 0.3)
 
-    else:
-        while (x < 50):
-            # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
-            fairy = fairys[x]
-            imgstring = fairy['image']
-            filelike = StringIO.StringIO(imgstring)
-            pic = Image.open(filelike)
-            # img = Image(filename=filelike, width=270, height=378)
+        # # draw some lines
+        # c.line(0, 0, 0, 1.7 * inch)
+        # c.line(0, 0, 1 * inch, 0)
+        # draw a rectangle
+        c.rect(0.1 * inch, 0.1 * inch, 180, 252, fill=0)
+        # make text go straight up
+        c.rotate(90)
+        # change color
+        c.setFillColorRGB(0, 0, 0.77)
+        # say hello (note after rotate the y coord needs to be negative!)
+        c.drawRightString(245, 0.4*-inch, str(name))
+        c.rotate(-90)
+        # TODO set box to boy or girl colour
+        c.setFillColorRGB(.9, .67, .98)
+        c.rect(0.1 * inch, 0.1 * inch, 180, 1*inch, fill=1)
+        c.setFont("Helvetica", 12)
+        c.setFillColorRGB(0, 0, 0.77)
+        c.drawString(0.2 * inch, 0.8 * inch, 'Age Index = '+ str(age))
+        c.drawString(0.2 * inch, 0.5 * inch,  'Kindness = '+ str(kind))
+        c.drawString(0.2 * inch, 0.2 * inch,  'Charactor = '+ str(charactor))
+        c.drawRightString(175, 0.8 * inch,  'Magic = '+ str(magic))
+        c.drawRightString(175, 0.5 * inch,  'Agility = '+ str(agility))
+        # table = Table(data, colWidths=180, rowHeights=252)
+        # table.setStyle(TableStyle([
+        #     # ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+        #     ('BOX', (0, 0), (-1, -1), 2, colors.palevioletred),
+        #     # ('BACKGROUND', (0, 0), (-1, 2), colors.lightgrey)
+        # ]))
 
-            data = [[fairy['name']]]
-            table = Table(data, colWidths=180, rowHeights=252)
-            table.setStyle(TableStyle([
-                # ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                ('BOX', (0, 0), (-1, -1), 2, colors.palevioletred),
-                # ('BACKGROUND', (0, 0), (-1, 2), colors.lightgrey)
-            ]))
-            pic.thumbnail(IMG_size, Image.ANTIALIAS)
-            c.drawInlineImage(pic, -5, 65, width=None, height=None)
-            table.wrapOn(c, 0, 18)
-            table.drawOn(c, 0, 18)
-            #
+        # table.wrapOn(c, 0, 18)
+        # table.drawOn(c, 0, 18)
+        #
 
-            c.showPage()
-            x = x + 1
+        c.showPage()
+        x = x + 1
 
     c.save()
 
+
+    #  Append all teh Cards into a PDF of all the cards for printing out
     input_pdf = PyPDF2.PdfFileReader(pdf)
     output_pdf = PyPDF2.PdfFileWriter()
-    # calculate number of A4 paged reguired for 9 fairies per page errot control to make sure it prints whole pages
+    # calculate number of A4 paged reguired for 9 fairies per page error control to make sure it prints whole pages
     number_page = input_pdf.getNumPages() % 9
 
     # get the first page from each pdf
@@ -660,6 +606,170 @@ def pdfcard():
 
 
     # return redirect('/home')
+
+
+
+@app.route('/randompdfcard')
+@roles_accepted('superuser')
+def randompdfcard():
+
+    PAGE_size = 180, 252
+    IMG_size = 270, 378
+
+    l = FairyImage.getfairyreferences("FAIRY_TBL")
+    numgirl = (len(l[0]))
+    numboy = (len(l[1]))
+
+    # Get a list of all Fairy IDs
+    Ids = []
+    for x in range(0, numgirl - 1):
+        Ids.append(l[0][x][0])
+    for y in range(0, numboy - 1):
+        Ids.append(l[1][y][0])
+
+    # get  Random selection ID's from the list of all ID's
+    random_IDs = []
+
+
+    while (random_IDs.__len__()<60):
+        id = random.choice(Ids)
+        if id not in random_IDs:
+            random_IDs.append(id)
+
+    # use the random ID's to populate a list of Fairies to build card deck from
+    fairys = FairyImage.get_multiple_fairies_from_db("FAIRY_TBL", random_IDs)
+
+    x = 0
+    pdf = StringIO.StringIO()
+    c = canvas.Canvas(pdf, pagesize=PAGE_size)
+
+    #  Build the cards (DOn't know why multiples of 10? but this builds a deck of 54)
+    while (x < 60):
+        # fairy = FairyImage.get_fairy_from_db("FAIRY_TBL", int(Ids[x]))
+        fairy = fairys[x]
+        imgstring = fairy['image']
+        filelike = StringIO.StringIO(imgstring)
+        pic = Image.open(filelike)
+        # img = Image(filename=filelike, width=270, height=378)
+        pic.thumbnail(IMG_size, Image.ANTIALIAS)
+        c.drawInlineImage(pic, 5, 75, width=None, height=None)
+        # Get Fairy Details
+
+        name = fairy['name']
+        age = fairy['agescore']
+        kind = (int(fairy['kindscore'])/2)
+        magic = fairy['magicscore']
+        agility = fairy['agilityscore']
+        charactor = fairy['charactorscore']
+
+                  # define a large font
+        c.setFont("Helvetica", 16)
+        # choose some colors
+
+        c.setStrokeColorRGB(0.2, 0.5, 0.3)
+
+        # # draw some lines
+        # c.line(0, 0, 0, 1.7 * inch)
+        # c.line(0, 0, 1 * inch, 0)
+        # draw a rectangle
+        c.rect(0.1 * inch, 0.1 * inch, 180, 252, fill=0)
+        # make text go straight up
+        c.rotate(90)
+        # change color
+        c.setFillColorRGB(0, 0, 0.77)
+        # say hello (note after rotate the y coord needs to be negative!)
+        c.drawRightString(245, 0.4*-inch, str(name))
+        c.rotate(-90)
+        # TODO set box to boy or girl colour
+        c.setFillColorRGB(.9, .67, .98)
+        c.rect(0.1 * inch, 0.1 * inch, 180, 1*inch, fill=1)
+        c.setFont("Helvetica", 12)
+        c.setFillColorRGB(0, 0, 0.77)
+        c.drawString(0.2 * inch, 0.8 * inch, 'Age Index = '+ str(age))
+        c.drawString(0.2 * inch, 0.5 * inch,  'Kindness = '+ str(kind))
+        c.drawString(0.2 * inch, 0.2 * inch,  'Charactor = '+ str(charactor))
+        c.drawRightString(175, 0.8 * inch,  'Magic = '+ str(magic))
+        c.drawRightString(175, 0.5 * inch,  'Agility = '+ str(agility))
+        # table = Table(data, colWidths=180, rowHeights=252)
+        # table.setStyle(TableStyle([
+        #     # ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+        #     ('BOX', (0, 0), (-1, -1), 2, colors.palevioletred),
+        #     # ('BACKGROUND', (0, 0), (-1, 2), colors.lightgrey)
+        # ]))
+
+        # table.wrapOn(c, 0, 18)
+        # table.drawOn(c, 0, 18)
+        #
+
+        c.showPage()
+        x = x + 1
+
+    c.save()
+
+
+    #  Append all teh Cards into a PDF of all the cards for printing out
+    input_pdf = PyPDF2.PdfFileReader(pdf)
+    output_pdf = PyPDF2.PdfFileWriter()
+    # calculate number of A4 paged reguired for 9 fairies per page error control to make sure it prints whole pages
+    number_page = input_pdf.getNumPages() % 9
+
+    # get the first page from each pdf
+
+
+    # start a new blank page with a size that can fit the merged pages side by side
+
+    p = 0
+    while (p < number_page):
+        page0 = input_pdf.pages[(9 * p) + 0]
+        page1 = input_pdf.pages[(9 * p) + 1]
+        page2 = input_pdf.pages[(9 * p) + 2]
+        page3 = input_pdf.pages[(9 * p) + 3]
+        page4 = input_pdf.pages[(9 * p) + 4]
+        page5 = input_pdf.pages[(9 * p) + 5]
+        page6 = input_pdf.pages[(9 * p) + 6]
+        # page7 = input_pdf.pages[(9 * p) + 7]
+        # page8 = input_pdf.pages[(9 * p) + 8]
+        # page0 = input_pdf.pages[0]
+        # page1 = input_pdf.pages[1]
+        # page2 = input_pdf.pages[2]
+        # page3 = input_pdf.pages[3]
+        # page4 = input_pdf.pages[4]
+        # page5 = input_pdf.pages[5]
+        # page6 = input_pdf.pages[6]
+        # page7 = input_pdf.pages[7]
+        # page8 = input_pdf.pages[8]
+
+        page = output_pdf.addBlankPage(width=595, height=843)
+        page.mergeTranslatedPage(page0, 0, 0)
+        page.mergeTranslatedPage(page1, 198, 0)
+        page.mergeTranslatedPage(page2, 396, 0)
+        page.mergeTranslatedPage(page3, 0, 273)
+        page.mergeTranslatedPage(page4, 198, 273)
+        page.mergeTranslatedPage(page5, 396, 273)
+        page.mergeTranslatedPage(page6, 0, 546)
+        # page.mergeTranslatedPage(page7, 198, 546)
+        # page.mergeTranslatedPage(page8, 396, 546)
+        p = p + 1
+
+    # write to file
+    outputstream = StringIO.StringIO()
+    output_pdf.write(outputstream)
+
+
+    binary_pdf = outputstream.getvalue()
+    outputstream.close()
+    response = make_response(binary_pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = \
+        'inline; filename=%s.pdf' % 'test.pdf'
+    return response
+
+
+    # return send_file(output_pdf, as_attachment=True)
+
+
+    # return redirect('/home')
+
 
 
 if __name__ == '__main__':

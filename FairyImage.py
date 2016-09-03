@@ -9,7 +9,7 @@ import pymysql.cursors
 CLOUDSQL_PROJECT = 'testflask-1315'
 CLOUDSQL_INSTANCE = 'us-central:fairydb'
 
-
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 from PIL import Image, ImageDraw, ImageFont
 sys.path.insert(1, os.path.join(os.path.abspath('.'), "virtenv/lib/python2.7/site-packages"))
@@ -247,6 +247,69 @@ def get_fairy_from_db(dbname, id):
         con.close()
 
 
+
+
+def get_random_fairy_from_db(dbname):
+    #  db = pymysql.connect(host='eu-cdbr-azure-west-d.cloudapp.net',
+    if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
+        con = pymysql.connect(
+                    host='104.197.55.21',
+                    unix_socket='testflask-1315:fairydb',
+                    user='root',
+                    passwd='TestFlask',
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
+    else:
+
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with con.cursor(pymysql.cursors.DictCursor) as cursor:
+            # Read a single record
+            sql = "SELECT * FROM " + dbname + " WHERE fairyid >= (SELECT FLOOR( MAX(fairyid) * RAND()) FROM " + dbname +") ORDER BY fairyid LIMIT 1"
+            cursor.execute(sql,)
+            result = cursor.fetchone()
+            # if result == None :
+            #         return None
+            # desc = cursor.description
+            # dict ={}
+
+            # for(name,value) in zip(desc,result):
+            #         dict[name[0]] =value
+
+            fairy = dict(
+                [('name', result['fairyname']), ('bodyx', result['fairybodyX']), ('bodyy', result['fairybodyY']),
+                 ('wingx', result['fairywingX']),
+                 ('wingy', result['fairywingY']), ('sex', result['fairysex']), ('eyesx', result['fairyeyesX']),
+                 ('eyesy', result['fairyeyesY']),
+                 ('mouthsx', result['fairymouthX']), ('mouthsy', result['fairymouthY']),
+                 ('earsx', result['fairyearsX']), ('earsy', result['fairyearsY']),
+                 ('shoesx', result['fairyshoesX']), ('shoesy', result['fairyshoesY']),
+                 ('accessx', result['fairyaccessX']), ('accessy', result['fairyaccessY']),
+                 ('haccessx', result['fairyheadaccessX']), ('haccessy', result['fairyheadaccessY']),
+                 ('topx', result['fairytopX']), ('topy', result['fairytopY']),
+                 ('bottomx', result['fairybottomX']), ('bottomy', result['fairybottomY']),
+                 ('hairx', result['fairyhairX']), ('hairy', result['fairyhairY']),
+                 ('wandx', result['fairywandX']), ('wandy', result['fairywandY']),
+                 ('agescore', result["fairyagescore"]),
+                 ('kindscore', result["fairykindnessscore"]), ('charactorscore', result["fairycharactorscore"]),
+                 ('magicscore', result["fairymagicscore"]), ('agilityscore', result["fairyagilityscore"]),
+                 ('intelligence', result["fairyintelligence"]), ('kindness', result["fairykindness"]),
+                 ('fairness', result["fairyfairness"]), ('funness', result["fairyfunness"]),
+                 ('wisdom', result["fairywisdom"]), ('dexterity', result["fairydexterity"]),
+                 ('humour', result["fairyhumour"]), ('magic', result["fairymagic"]), ('speed', result["fairyspeed"]),
+                 ('image', result["image"])
+                 ])
+            #print (fairy)
+            return fairy
+    finally:
+        con.close()
+
 def get_multiple_fairies_from_db(dbname, ids):
     # returns an array of fairies when passed an array of Fiary ID's
     #  db = pymysql.connect(host='eu-cdbr-azure-west-d.cloudapp.net',
@@ -316,8 +379,73 @@ def get_multiple_fairies_from_db(dbname, ids):
     finally:
         con.close()
 
+def get_multiplerandom_fairies_from_db(dbname, num):
+    # returns an array of fairies when passed an array of Fiary ID's
+    #  db = pymysql.connect(host='eu-cdbr-azure-west-d.cloudapp.net',
+    number = str(num)
+    if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
+        con = pymysql.connect(
+            host='104.197.55.21',
+            unix_socket='testflask-1315:fairydb',
+            user='root',
+            passwd='TestFlask',
+            database='My_Fairy_Kingdom',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
+    else:
+
+        con = pymysql.connect(host='localhost',
+                              user='dbuser',
+                              passwd='TestFlask',
+                              database='My_Fairy_Kingdom',
+                              charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with con.cursor(pymysql.cursors.DictCursor) as cursor:
 
 
+            sql = "SELECT * FROM " + dbname + " WHERE RAND()<(SELECT ((" + number + "/COUNT(*))*10) FROM " + dbname + ") ORDER BY RAND() LIMIT " + number + ";"
+            cursor.execute(sql, )
+            results = cursor.fetchall()
+            fairies=[]
+            # if result == None :
+            #         return None
+            # desc = cursor.description
+            # dict ={}
+
+            # for(name,value) in zip(desc,result):
+            #         dict[name[0]] =value
+            for result in results:
+                fairy = dict(
+                    [('name', result['fairyname']), ('bodyx', result['fairybodyX']),
+                     ('bodyy', result['fairybodyY']),
+                     ('wingx', result['fairywingX']),
+                     ('wingy', result['fairywingY']), ('sex', result['fairysex']), ('eyesx', result['fairyeyesX']),
+                     ('eyesy', result['fairyeyesY']),
+                     ('mouthsx', result['fairymouthX']), ('mouthsy', result['fairymouthY']),
+                     ('earsx', result['fairyearsX']), ('earsy', result['fairyearsY']),
+                     ('shoesx', result['fairyshoesX']), ('shoesy', result['fairyshoesY']),
+                     ('accessx', result['fairyaccessX']), ('accessy', result['fairyaccessY']),
+                     ('haccessx', result['fairyheadaccessX']), ('haccessy', result['fairyheadaccessY']),
+                     ('topx', result['fairytopX']), ('topy', result['fairytopY']),
+                     ('bottomx', result['fairybottomX']), ('bottomy', result['fairybottomY']),
+                     ('hairx', result['fairyhairX']), ('hairy', result['fairyhairY']),
+                     ('wandx', result['fairywandX']), ('wandy', result['fairywandY']),
+                     ('agescore', result["fairyagescore"]),
+                     ('kindscore', result["fairykindnessscore"]), ('charactorscore', result["fairycharactorscore"]),
+                     ('magicscore', result["fairymagicscore"]), ('agilityscore', result["fairyagilityscore"]),
+                     ('intelligence', result["fairyintelligence"]), ('kindness', result["fairykindness"]),
+                     ('fairness', result["fairyfairness"]), ('funness', result["fairyfunness"]),
+                     ('wisdom', result["fairywisdom"]), ('dexterity', result["fairydexterity"]),
+                     ('humour', result["fairyhumour"]), ('magic', result["fairymagic"]),
+                     ('speed', result["fairyspeed"]), ('image', result["image"])
+                     ])
+                # print (fairy)
+                fairies.append(fairy)
+
+            return fairies
+    finally:
+        con.close()
 
 
 
@@ -998,7 +1126,8 @@ def getrandomfairysheet(number):
         ids.append(random.randint(1, totalfairies))
         x=x+1
 
-    fairies = get_multiple_fairies_from_db('FAIRY_TBL', ids)
+    # fairies = get_multiple_fairies_from_db('FAIRY_TBL', ids)
+    fairies = get_multiplerandom_fairies_from_db('FAIRY_TBL', number)
     canvas = getfairymontage(fairies, 4)
     return canvas
 
@@ -1113,35 +1242,35 @@ def getfairypicfromdb(fairyname):
     return canvas
 
 
-def getrandomfairypic():
-    # gets a list of all fairy ID's in DB and randomly chooses one to draw to screen
-    l = getfairyreferences("FAIRY_TBL")
-    numgirl= (len(l[0]))
-    numboy= (len(l[1]))
-    Ids=[]
-    for x in range(0,numgirl-1):
-        Ids.append(l[0][x][0])
-    for y in range(0,numboy-1):
-        Ids.append(l[1][y][0])
-    # fairy = get_fairy_from_db("FAIRY_TBL",int(Ids[random.randint(0,len(Ids))]) )
-    # fairypicture = getrandomfairypic(int(Ids[random.randint(0,len(Ids))]))
-    fairypicture = getrandomfairypic()
-    return fairypicture
+# def getrandomfairypic():
+#     # gets a list of all fairy ID's in DB and randomly chooses one to draw to screen
+#     l = getfairyreferences("FAIRY_TBL")
+#     numgirl= (len(l[0]))
+#     numboy= (len(l[1]))
+#     Ids=[]
+#     for x in range(0,numgirl-1):
+#         Ids.append(l[0][x][0])
+#     for y in range(0,numboy-1):
+#         Ids.append(l[1][y][0])
+#     # fairy = get_fairy_from_db("FAIRY_TBL",int(Ids[random.randint(0,len(Ids))]) )
+#     # fairypicture = getrandomfairypic(int(Ids[random.randint(0,len(Ids))]))
+#     fairypicture = getrandomfairypic()
+#     return fairypicture
 
 
 #   COMMAND LINE FUNCTIONS
 
 def getrandomfairy():
     # gets a list of all fairy ID's in DB and randomly chooses one to draw to screen
-    l = getfairyreferences("FAIRY_TBL")
-    numgirl = (len(l[0]))
-    numboy = (len(l[1]))
-    Ids = []
-    for x in range(0, numgirl - 1):
-        Ids.append(l[0][x][0])
-    for y in range(0, numboy - 1):
-        Ids.append(l[1][y][0])
-    fairy = get_fairy_from_db("FAIRY_TBL", int(Ids[random.randint(0, len(Ids)-1)]))
+    # l = getfairyreferences("FAIRY_TBL")
+    # numgirl = (len(l[0]))
+    # numboy = (len(l[1]))
+    # Ids = []
+    # for x in range(0, numgirl - 1):
+    #     Ids.append(l[0][x][0])
+    # for y in range(0, numboy - 1):
+    #     Ids.append(l[1][y][0])
+    fairy = get_random_fairy_from_db("FAIRY_TBL")
     return fairy
 
 def main(argv):
