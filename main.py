@@ -168,7 +168,7 @@ def send_email(msg):
 admin = flask_admin.Admin(
     app,
     'My Fairy Kingdom',
-    base_template='my_master.html',
+    base_template='my_main.html',
     template_mode='bootstrap3',
 )
 
